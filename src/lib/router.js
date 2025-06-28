@@ -7,6 +7,7 @@ import User from '../pages/User.vue';
 import Category from '../pages/Category.vue';
 import Items from '../pages/Items.vue';
 import Bookings from '../pages/Bookings.vue';
+import Login from '../pages/Login.vue';
 
 Vue.use(Router);
 
@@ -17,6 +18,12 @@ export default new Router({
       path: '/',
       redirect: '/dashboard', // default route
     },
+
+    {
+      path: '/login',
+      name: 'Login',
+      component: Login,
+    },  
     {
       path: '/dashboard',
       name: 'Dashboard',
