@@ -1,115 +1,258 @@
 <template>
-  <v-card class="ma-4">
-    <v-card-title>Rental Items</v-card-title>
+  <v-card class="ma-5 pa-3">
+    <div class="d-flex justify-space-around align-center">
+      <v-card-title style="width: 100%;">Items</v-card-title>
+      <div class="d-flex align-items-center" style="padding: 10px; gap:10px">
+         <v-select
+          :items="categories"
+          v-model="query.category"
+          outlined
+          rounded
+          hide-details
+          dense
+          clearable
+          @change="handleSearchRecord()"
+          required
+          style="text-transform: capitalize; width: 230px;"
+          label="Category"
+        ></v-select>
+        <v-select
+          :items="status_option"
+          v-model="query.status"
+          outlined
+          rounded
+          hide-details
+          dense
+          @change="handleSearchRecord()"
+          required
+          style="text-transform: capitalize; width: 230px;"
+          label="Status"
+        ></v-select>
+        <v-text-field
+            name="Item Nam"
+            label="Item Name"
+            rounded
+            v-model="query.search"
+            @change="handleSearchRecord()"
+            background-color=""
+            outlined
+            style="width: 230px;"
+            dense
+            clearable
+            hide-details=""
+        ></v-text-field>
+      </div>
+      <v-btn
+            class="mx-2"
+            fab
+            dark
+            @click="show_modal = true"
+            small
+            color="primary"
+          >
+            <v-icon dark>
+              mdi-plus
+          </v-icon>
+        </v-btn>
+    </div>
     <v-card-text>
       <v-data-table
         :headers="headers"
-        :items="items"
+        :items="items.data"
+        :server-items-length="items.total"
+        :page="items.current_page"
+        :loading="tableLoading"
+        :items-per-page="items.per_page"
         item-key="id"
       >
-        <!-- Clickable image -->
+
         <template v-slot:item.image="{ item }">
-          <v-avatar size="40" class="cursor-pointer" @click="previewImage(item.image)">
-            <img :src="item.image" alt="item" />
-          </v-avatar>
+          <v-img 
+            style="cursor: pointer;"
+            type="rounded"
+            max-width="50"
+            :src="item.images.length > 0 ? item.images[0].image_url : ''" 
+            @click="handleShowImages(item.images)" 
+          />
         </template>
 
-        <!-- Status Chip -->
         <template v-slot:item.status="{ item }">
-          <v-chip :color="item.status === 'Available' ? 'green' : 'red'" dark>
+          <v-chip :color="item.status === 'active' ? 'green' : 'red'" dark style="text-transform: capitalize;">
             {{ item.status }}
           </v-chip>
+        </template> 
+        <template v-slot:item.price_per_day="{ item }">
+            ₱ {{ item.price_per_day }}
         </template>
+
+         <template v-slot:item.category="{ item }">
+           {{ item.category ? item.category.name : 'N/A' }}
+        </template>
+
+         <template v-slot:item.owner="{ item }">
+           {{ item.owner ? item.owner.full_name : 'N/A' }}
+        </template>
+
+       
+        <template v-slot:item.action="{ item }">
+            <div class="d-flex">
+              <v-btn color="primary" icon small @click="handleEdit(item)">
+                <v-icon size="18">mdi-pencil</v-icon>
+              </v-btn>
+              |
+              <template>
+                <v-btn color="primary" icon small @click="handleDelete(item)">
+                  <v-icon size="18" color="red">mdi-delete</v-icon>
+                </v-btn> 
+              </template>
+            </div>
+        </template>
+    
+    
       </v-data-table>
     </v-card-text>
 
-    <!-- Image Preview Dialog -->
-    <v-dialog v-model="dialog" max-width="500">
-      <v-card>
-        <v-img :src="selectedImage" aspect-ratio="1.5" contain></v-img>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="primary" text @click="dialog = false">Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <Items :show_modal="show_modal" @closeModal="handleCloModal" :categories="categories" :item_selected="edit_item" @fetchRecords="handleGetItems"/>
+    <vue-easy-lightbox
+      :visible="visible"
+      :imgs="images"
+      :index="currentIndex"
+      @hide="visible = false"
+    />
   </v-card>
 </template>
 
 <script>
+import Items from '../components/modals/Items.vue'
+import VueEasyLightbox from 'vue-easy-lightbox'
 export default {
+  components: {
+    Items,
+    VueEasyLightbox
+  },
   data() {
     return {
-      dialog: false,
-      selectedImage: '',
-      items: [
-        {
-          id: 1,
-          name: 'Toyota Vios',
-          category: 'Cars',
-          price: 1500,
-          status: 'Available',
-          owner: 'John Doe',
-          image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTMjtv_y0RR_pg76EiQypXRHnsQeRqcLUD8DA&s' // your base64 here
-        },
-        {
-          id: 2,
-          name: 'Office Chair - Ergonomic',
-          category: 'Chairs',
-          price: 100,
-          status: 'Rented',
-          owner: 'Furniture Hub',
-          image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTJEj9F9Dyc6_TuUobnUxGcEJhbAufbJJ8mCg&s'
-        },
-        {
-          id: 3,
-          name: 'Samsung Refrigerator',
-          category: 'Appliances',
-          price: 350,
-          status: 'Available',
-          owner: 'Appliance Rentals PH',
-          image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT82B0cz_xgfqIYhUqsS5VPKMDRbr9oNg6S8w&s'
-        },
-        {
-          id: 4,
-          name: 'HD Projector',
-          category: 'Electronics',
-          price: 500,
-          status: 'Available',
-          owner: 'Tech Rentals',
-          image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQWdQqPGJsA92rW3kJSQXvHdLOHfpGRwarFWw&s'
-        },
-        {
-          id: 5,
-          name: 'Camping Tent - 4 Person',
-          category: 'Tents',
-          price: 200,
-          status: 'Rented',
-          owner: 'John Doe',
-          image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-hGYKidzYB791nQ32cvl3GYZXiWmMRTcN9Q&s'
-        }
-      ],
+      status_option: ['all','active', 'inactive'],
+      status: 'all',
+      show_modal: false,
+      visible: false,
+      tableLoading : false,
+      images: [],
+      currentIndex: 0,
+      categories: [],
+      items: [],
+      current_page: 1,
+      edit_item:null,
+      search:null,
+      query:{
+        search:'',
+        status:'all',
+        category:'',
+      },
       headers: [
-        { text: 'Image', value: 'image', sortable: false },
-        { text: 'Item Name', value: 'name' },
+        { text: 'Image', value: 'image' },
+        { text: 'Name', value: 'name' },
         { text: 'Category', value: 'category' },
-        { text: 'Price (₱)', value: 'price' },
+        { text: 'Owner', value: 'owner' },
+        { text: 'Available', value: 'available' },
+        { text: 'Rent Per Day', value: 'price_per_day' },
         { text: 'Status', value: 'status' },
-        { text: 'Owner', value: 'owner' }
+        { text: 'Action', value: 'action' },
       ]
-    };
+    }
+  },
+  mounted(){
+    this.handleGetCatoregories();
+    this.handleGetItems();
   },
   methods: {
-    previewImage(imageUrl) {
-      this.selectedImage = imageUrl;
-      this.dialog = true;
-    }
-  }
-};
-</script>
+      handleShowImages(images) {
+        const imageList = images.map((itemx)=>{
+          return itemx.image_url;
+        });
+        this.images = imageList
+        this.currentIndex = 0
+        this.visible = true
+      },
+      handleSearchRecord(){
+        this.handleGetItems()
+      },  
+      handleCloModal(){
+        this.show_modal = false;
+        this.edit_item = null;
+      },  
+      handleEdit(item){
+        const edit_item = {...item};
+        this.edit_item = edit_item;
+        this.show_modal = true
+      },
 
-<style scoped>
-.cursor-pointer {
-  cursor: pointer;
+      handleDelete(item) {
+          this.$notiflix.Confirm.show(
+              'DELETE',
+              'Do you want to delete this item?',
+              'Yes',
+              'No',
+              () => {
+                  this.handleDeleteItem(item)
+              },
+          );
+      },
+
+      handleDeleteItem (item) {
+        this.$notiflix.Loading.arrows();
+        this.axios.delete(`/items/${item.id}`).then((res)=>{
+            if(res.status){
+              this.$awn.success(`Items Deleted Successfully`);
+              this.handleGetItems();
+            }
+        }).catch((error)=>{
+            console.log(error,'error')
+        }).finally(()=>{
+            this.submitLoading = false;
+            this.$notiflix.Loading.remove();
+        })
+      },
+      handleGetItems () {
+        this.tableLoading = true;
+        this.axios.get('/items', {
+          params: {
+            page: this.current_page,
+            search: this.query.search || '',
+            status: this.query.status || '',
+            category: this.query.category || ''
+          }
+        })
+        .then((res)=>{
+            if(res.status){
+             this.items = res.data.data;
+            }
+        }).catch((error)=>{
+            console.log(error,'error')
+        }).finally(()=>{
+            this.tableLoading = false;
+            this.$notiflix.Loading.remove();
+        })
+      },
+      handleGetCatoregories () {
+        this.$notiflix.Loading.arrows();
+        this.submitLoading = true;
+        this.axios.get(`/category?all=true`).then((res)=>{
+            if(res.status){
+              this.categories = res.data.data.map((item)=>{
+                return {
+                  value:item.id,
+                  text:item.name
+                }
+              });
+            }
+        }).catch((error)=>{
+            console.log(error,'error')
+        }).finally(()=>{
+            this.submitLoading = false;
+            this.$notiflix.Loading.remove();
+        })
+      }
+  },
 }
-</style>
+</script>

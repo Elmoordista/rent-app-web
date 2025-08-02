@@ -11,7 +11,7 @@
                     
                     <v-card-title primary-title>
                       <!-- <v-img src="/adminlogo.png" width="150" height="150" id="selected-image"></v-img> -->
-                      <v-img :src="noimage" width="150" height="150" id="selected-image"></v-img>
+                      <v-img src="/3pf_logo.jpg" width="120" height="120" class="rounded" id="selected-image"></v-img>
                     </v-card-title>
                     <v-form id="v_form">
                       <v-text-field
@@ -20,9 +20,9 @@
                         :rules="checkEmail"
                         v-model="data.email"
                         append-icon="mdi-email"
-                        rounded
                         background-color=""
-                        solo
+                        outlined
+                        dense
                       ></v-text-field>
                       <v-text-field
                         name="Password"
@@ -30,15 +30,15 @@
                         :type="viewpass?'password':'text'"
                         :rules="checkPass"
                         v-model="data.password"
-                         solo
+                         outlined
+                         dense
                         :append-icon="viewpass?'mdi-eye':'mdi-eye-off'"
                         @click:append="viewpass =! viewpass"
-                        rounded
                       ></v-text-field>
 
                       <v-card-actions>
-                        <v-btn primary large block @click="_submit" 
-                        rounded
+                        <v-btn  color="primary" block @click="_submit" 
+                        dense
                           >Login</v-btn
                         >
                       </v-card-actions>
@@ -137,7 +137,7 @@ export default {
 </script>
 <style scoped>
 .login .cont {
-  width: 500px;
+  width: 400px !important;
   margin: auto;
   box-shadow: 0 3px 5px -1px rgba(100, 100, 0, 0.2),
     0 5px 8px 0 rgba(100, 100, 0, 0.14), 0 1px 14px 0 rgba(100, 100, 0, 0.12) !important;
@@ -156,7 +156,7 @@ export default {
   align-items: center;
   justify-content: flex-start;
   gap: 30px;
-  padding-top: 8%;
+  padding-top: 2%;
 }
 #imglogo {
   width: 70%!important;
@@ -174,7 +174,6 @@ export default {
 } 
 ._cont .v-card {
   border-radius: 12px;
-  background-color: #000 !important;
 }
 .flex{
   width: 450px !important;
