@@ -11,14 +11,14 @@ const HttpClient = axios.create({
   },
 });
 
-// HttpClient.interceptors.request.use((config) => {
-//   const token = Cookies.get('token');
-//   config.headers = {
-//     ...config.headers,
-//     Authorization: `Bearer ${token}`,
-//   };
-//   return config;
-// });
+HttpClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  config.headers = {
+    ...config.headers,
+    Authorization: `Bearer ${token}`,
+  };
+  return config;
+});
 
 // Cookies.remove('company_id');
 

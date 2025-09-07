@@ -1,7 +1,6 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 
-// Import your page components
 import Dashboard from '../pages/Dashboard.vue';
 import User from '../pages/User.vue';
 import Category from '../pages/Category.vue';
@@ -11,44 +10,28 @@ import Login from '../pages/Login.vue';
 
 Vue.use(Router);
 
-export default new Router({
-  mode: 'history', // pretty URLs without #
+const router = new Router({
+  mode: 'history',
   routes: [
-    {
-      path: '/',
-      redirect: '/dashboard', // default route
-    },
-
-    {
-      path: '/login',
-      name: 'Login',
-      component: Login,
-    },  
-    {
-      path: '/dashboard',
-      name: 'Dashboard',
-      component: Dashboard,
-    },
-    {
-      path: '/user',
-      name: 'User',
-      component: User,
-    },
-    {
-      path: '/category',
-      name: 'Category',
-      component: Category,
-    },
-    {
-      path: '/items',
-      name: 'Items',
-      component: Items,
-    },
-    {
-      path: '/bookings',
-      name: 'Bookings',
-      component: Bookings,
-    },
-    // add more routes as needed
+    { path: '/', redirect: '/dashboard' },
+    { path: '/login', name: 'Login', component: Login },
+    { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true } },
+    { path: '/user', name: 'User', component: User, meta: { requiresAuth: true } },
+    { path: '/category', name: 'Category', component: Category, meta: { requiresAuth: true } },
+    { path: '/items', name: 'Items', component: Items, meta: { requiresAuth: true } },
+    { path: '/bookings', name: 'Bookings', component: Bookings, meta: { requiresAuth: true } },
   ],
 });
+
+// 🔑 Navigation guard
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = !!localStorage.getItem('token'); // or check Vuex state
+
+  if (to.matched.some(record => record.meta.requiresAuth) && !isAuthenticated) {
+    next('/login'); // redirect to login if not authenticated
+  } else {
+    next(); // proceed
+  }
+});
+
+export default router;

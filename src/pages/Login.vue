@@ -99,33 +99,25 @@ export default {
     };
   },
   mounted(){
-    // this.getDeviceToken();
+    // this.$awn.success(`Category Deleted Successfully`);
   },
   methods: {
-      initialize(token){
-          this.token = token;
-      },
     _submit() {
-      const thiss = this;
+      //validate form
       var payload = {
           email: this.data.email,
           password: this.data.password,
-          fcm_token: this.token,
       };
-      this.$axios
-        .post("/admin/admin/login", payload)
+      var thiss = this;
+      this.axios.post("/user/login-admin", {...payload})
         .then(function (response) {
-          if (response.data.message == "success") {
-            localStorage.setItem("token", response.data[0].token);
-            localStorage.setItem("role", response.data[0].role);
-            thiss.$router.push({ name: thiss.roles[response.data[0].role - 1]});
-            thiss.$awn.success('Successfully login')
-          } else if (response.data.message == "no account") {
-            // thiss.snackbar = true;
-            thiss.$awn.alert('Unauthorised account')
+          if (response.data.success) {
+            thiss.$awn.success(`Login Successfully`);
+            localStorage.setItem("token", response.data.token);
+            window.location.href = "/";
           } else {
-            // thiss.snackbar = true;
-            thiss.$awn.alert('Invalid Email/Password')
+            thiss.text = response.data.message;
+            thiss.snackbar = true;
           }
         })
         .catch(function (error) {
