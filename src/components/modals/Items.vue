@@ -3,7 +3,7 @@
     <v-dialog
       v-model="dialog"
       persistent
-      width="600"
+      width="900"
     >
       <v-card>
         <v-card-title class="text-h5 grey lighten-2 d-flex justify-space-between align-center">

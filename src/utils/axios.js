@@ -23,11 +23,11 @@ HttpClient.interceptors.request.use((config) => {
 // Cookies.remove('company_id');
 
 const responseErrorInterceptor = (error) => {
-  // if ((error.response && error.response.status == 401)) {
-  //   // if ((error.response && error.response.status == 401) || error.code == "ERR_NETWORK" || error.code == "ERR_BAD_RESPONSE") {
-  //     Cookies.remove('token');
-  //     window.location.href = '/login';
-  // }
+  if ((error.response && error.response.status == 401)) {
+    // if ((error.response && error.response.status == 401) || error.code == "ERR_NETWORK" || error.code == "ERR_BAD_RESPONSE") {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+  }
   if ((error.response && error.response.data.message)) {
       showError(error.response.data.message)
   }
