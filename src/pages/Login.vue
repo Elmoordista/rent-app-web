@@ -11,7 +11,7 @@
                     
                     <v-card-title primary-title>
                       <!-- <v-img src="/adminlogo.png" width="150" height="150" id="selected-image"></v-img> -->
-                      <v-img src="/3pf_logo.jpg" width="120" height="120" class="rounded" id="selected-image"></v-img>
+                      <v-img src="/3pf.png" width="120" height="130" class="rounded" id="selected-image"></v-img>
                     </v-card-title>
                     <v-form id="v_form">
                       <v-text-field
