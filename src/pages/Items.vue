@@ -85,6 +85,14 @@
             ₱ {{ item.price_per_day }}
         </template>
 
+         <template v-slot:item.total_reviews="{ item }">
+          <div class="d-flex">
+            <v-chip color="blue" dark @click="handleShowReviews(item)">
+              {{ item.reviews_count }}
+            </v-chip>
+          </div>
+        </template>
+
          <template v-slot:item.category="{ item }">
            {{ item.category ? item.category.name : 'N/A' }}
         </template>
@@ -119,6 +127,66 @@
       :index="currentIndex"
       @hide="visible = false"
     />
+    <v-dialog
+      v-model="show_reviews"
+      max-width="600"
+      persistent>
+      <v-card>
+        <v-card-title class="d-flex justify-space-between align-center">
+          <span>
+            Reviews ({{ item_selected?.reviews_count ? item_selected.reviews_count : 0 }})
+          </span>
+          <v-rating :value="item_selected?.reviews_avg_rating ? item_selected.reviews_avg_rating : 0" color="yellow darken-3" dense readonly></v-rating>
+        </v-card-title>
+        <v-divider></v-divider>
+        <v-card-text>
+          <div  class="mb-3" v-for="(review, index) in reviews" :key="index">
+            <v-list-item @click="fullReview = review; showFullReview = true" style="cursor: pointer;">
+              <v-list-item-avatar>
+                <v-icon size="40">mdi-account-circle</v-icon>
+              </v-list-item-avatar>
+              <v-list-item-content>
+                <v-list-item-title>{{ review.user.full_name }}</v-list-item-title>
+                <v-list-item-subtitle>{{ review.comment }} </v-list-item-subtitle>
+              </v-list-item-content>
+              <v-list-item-action>
+                <v-rating :value="review.rating" color="yellow darken-3" dense readonly></v-rating>
+              </v-list-item-action>
+            </v-list-item>
+            <v-divider></v-divider>
+          </div>
+          <div v-if="reviews.length == 0" class="text-center no-reviews mt-4">
+            No Reviews Yet.
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn text @click="show_reviews = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="showFullReview" max-width="600">
+        <v-card>
+          <v-card-title>
+            <v-icon left color="primary">mdi-account-circle</v-icon>
+            <span class="text-h6">{{ fullReview?.user?.full_name }}</span>
+            <v-spacer></v-spacer>
+            <v-rating :value="fullReview?.rating" color="yellow darken-3" dense readonly />
+          </v-card-title>
+
+          <v-divider></v-divider>
+
+          <v-card-text>
+            <p class="text-body-1 mt-4">{{ fullReview?.comment }} </p>
+          </v-card-text>
+
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn text color="primary" @click="showFullReview = false">Close</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
   </v-card>
 </template>
 
@@ -137,12 +205,15 @@ export default {
       show_modal: false,
       visible: false,
       tableLoading : false,
+      showFullReview: false,
+      fullReview: null,
       images: [],
       currentIndex: 0,
       categories: [],
       items: [],
       current_page: 1,
       edit_item:null,
+      show_reviews:null,
       search:null,
       query:{
         search:'',
@@ -157,8 +228,11 @@ export default {
         { text: 'Available', value: 'available' },
         { text: 'Rent Per Day', value: 'price_per_day' },
         { text: 'Status', value: 'status' },
+        { text: 'Total Reviews', value: 'total_reviews' },
         { text: 'Action', value: 'action' },
-      ]
+      ],
+      reviews : [],
+      item_selected : null,
     }
   },
   mounted(){
@@ -166,6 +240,19 @@ export default {
     this.handleGetItems();
   },
   methods: {
+      handleShowReviews(item){
+        this.$notiflix.Loading.arrows();
+        this.axios.get(`/items/get-reviews/${item.id}`).then((res)=>{
+          this.reviews = res.data.data;
+          this.item_selected = res.data.item;
+          this.show_reviews = true;
+
+        }).catch((error)=>{
+            console.log(error,'error')
+        }).finally(()=>{
+            this.$notiflix.Loading.remove();
+        })
+      },
       handleShowImages(images) {
         const imageList = images.map((itemx)=>{
           return itemx.image_url;

@@ -55,6 +55,14 @@
         </template>
 
        
+        <template v-slot:item.total_items="{ item }">
+          <div class="d-flex">
+            <v-chip color="blue" dark>
+              {{ item.items_count }}
+            </v-chip>
+          </div>
+        </template>
+        
         <template v-slot:item.action="{ item }">
             <div class="d-flex">
               <v-btn color="primary" icon small @click="handleEdit(item)">
@@ -94,6 +102,7 @@ export default {
       headers: [
         { text: 'Name', value: 'name' },
         { text: 'Description', value: 'description' },
+        { text: 'Total Items', value: 'total_items' },
         { text: 'Status', value: 'status' },
         { text: 'Action', value: 'action' },
       ]

@@ -39,6 +39,60 @@
     <v-app-bar v-if="!isLoginPage" app color="grey darken-4 app-bar-wrapper">
       <v-app-bar-nav-icon @click="drawer = !drawer" style="color: white;"></v-app-bar-nav-icon>
       <v-toolbar-title style="color: white;">{{ $route.name }}</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <!-- menu buttons -->
+      <div class="text-center">
+          <v-menu
+            v-model="menu"
+            :close-on-content-click="false"
+            transition="slide-x-transition"
+            bottom
+            :nudge-width="100"
+            offset-y
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <!-- <v-btn
+                color="indigo"
+                dark
+                v-bind="attrs"
+                v-on="on"
+              >
+                Menu as Popover
+              </v-btn> -->
+
+              <v-avatar
+                v-bind="attrs"
+                v-on="on"
+                size="32"
+                class="ml-2"
+              >
+                <v-icon color="#fff" size="40">mdi-account-circle</v-icon>
+              </v-avatar>
+
+            </template>
+
+            <v-card class="menu-wrapper" style="background-color: #424242; color: white; min-width: 200px;">
+              <v-list>
+                <v-list-item>
+                  <v-list-item-title>
+                    <v-icon left>mdi-cog</v-icon>
+                    Settings
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+              <v-divider></v-divider>
+              <v-list >
+                <v-list-item @click="handleLogout">
+                  <v-list-item-title>
+                    <v-icon left>mdi-logout</v-icon>
+                    Logout
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-card>
+          </v-menu>
+      </div>
+       
     </v-app-bar>
 
     <v-main class="main-wrapper">
@@ -52,6 +106,10 @@ export default {
   data: () => ({
     cards: ['Today', 'Yesterday'],
     drawer: null,
+    fav: true,
+    menu: false,
+    message: false,
+    hints: true,
     links: [
       {
         icon: 'mdi-view-dashboard',
@@ -87,6 +145,20 @@ export default {
       return this.$route.name === 'Login';
     }
   },
+  methods: {
+    handleLogout() {
+     this.$notiflix.Confirm.show(
+        'Logout',
+        'Do you want to logout?',
+        'Yes',
+        'No',
+        () => {
+          localStorage.removeItem('token');
+          this.$router.push({ name: 'Login' });
+        },
+    );
+    }
+  }
 };
 </script>
 
@@ -103,5 +175,14 @@ export default {
 
 .main-wrapper {
   background-color: #ededed;
+}
+</style>
+
+<style scoped>
+.menu-wrapper .v-list:hover {
+  background-color: #616161 !important;
+}
+.menu-wrapper .v-list:hover *{
+  color: #fff;
 }
 </style>
