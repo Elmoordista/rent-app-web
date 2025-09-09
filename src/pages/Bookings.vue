@@ -250,6 +250,10 @@
 
                 <v-divider class="my-3"></v-divider>
                 <div class="d-flex justify-space-between">
+                  <span>Total Days:</span>
+                  <strong>{{ handleComputeTotalDays(selectedOrder?.start_date, selectedOrder?.end_date) }}</strong>
+                </div>
+                <div class="d-flex justify-space-between">
                   <span>Total:</span>
                   <strong>₱ {{ handleChangeMoneyFormat(selectedOrder.total_price) }}</strong>
                 </div>
@@ -316,6 +320,11 @@ export default {
     this.handleGetBookings();
   },
   methods: {
+      handleComputeTotalDays(startDate, endDate) {
+        const start = moment(startDate);
+        const end = moment(endDate);
+        return end.diff(start, 'days'); // +1 to include the start day
+      },
       handleDecodeData(data) {
         if (!data) return null;
         return JSON.parse(data);
