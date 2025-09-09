@@ -49,7 +49,7 @@
 
           <template v-slot:item.user="{ item }">
             <div>
-              {{ item.user.full_name }} <br/>
+              {{ item.user.full_name ? item.user.full_name : item.user.email }} <br/>
             </div>
           
           </template>
@@ -153,7 +153,7 @@
                     <div>
                       <div class="text-caption text-grey">Ordered By</div>
                       <div class="text-subtitle-1 font-weight-medium">
-                        {{ selectedOrder?.user?.full_name }}
+                        {{ selectedOrder?.user?.full_name ? selectedOrder?.user?.full_name : selectedOrder?.user?.email }}
                       </div>
                     </div>
                   </v-card>
@@ -372,6 +372,9 @@ export default {
       },
     // put comma
       handleChangeMoneyFormat(amount) {
+        if (amount === null || amount === undefined) {
+          return "0"; // or return "" depending on what you want
+        }
         return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
       },
       handleChangeFormat(date) {
