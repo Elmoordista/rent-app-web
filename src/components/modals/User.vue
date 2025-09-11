@@ -123,10 +123,7 @@
         type: Boolean,
         default: false,
       },
-      user_data: {
-        type: Object,
-        required: true,
-      }
+      user_data: {}
     },
     data () {
       return {

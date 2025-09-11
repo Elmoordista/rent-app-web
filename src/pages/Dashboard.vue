@@ -2,42 +2,55 @@
   <div>
     <div class="d-flex align-center" style="gap: 10px; padding: 15px;">
       <v-card width="50%" style="height: 50vh;">
-        <v-card-title>
-          <v-icon class="mr-2">mdi-home</v-icon>
-          Rent Statistics
+        <v-card-title class="card-title">
+            <div>
+              <v-icon class="mr-2">mdi-home</v-icon>
+              Rent Statistics
+            </div>
         </v-card-title>
         <v-card-text>
-         <div class="d-flex flex-wrap rent-statistics-wrapper">
-           <v-card style="flex: 1; background-color: green;">
+         <div class="d-flex flex-wrap rent-statistics-wrapper" style="flex: wrap;">
+           <v-card style=" width: 30%;background-color: green;">
             <v-card-title>
-             Done
+             Completed
             </v-card-title>
             <v-card-text>
               <div class="d-flex align-center" style="gap: 10px;">
-                <v-icon>mdi-check</v-icon>
-                <h2>15</h2>
+                <v-icon>mdi-flag-checkered</v-icon>
+                <h2>{{ status_booking.completed }}</h2>
               </div>
             </v-card-text>
           </v-card>
-           <v-card style="flex: 1; background-color: blue;">
+           <v-card style=" width: 30%;background-color: blue;">
             <v-card-title>
-             Processing
+             Confirmed
             </v-card-title>
             <v-card-text>
               <div class="d-flex align-center" style="gap: 10px;">
-                <v-icon>mdi-cog-sync</v-icon>
-                <h2>5</h2>
+                <v-icon>mdi-check-circle-outline</v-icon>
+                <h2>{{ status_booking.confirmed }}</h2>
               </div>
             </v-card-text>
           </v-card>
-           <v-card style="flex: 1; background-color: orange;">
+           <v-card style=" width: 30%;background-color: red;">
+            <v-card-title >
+             Cancelled
+            </v-card-title>
+            <v-card-text>
+              <div class="d-flex align-center" style="gap: 10px;">
+                <v-icon>mdi-close-circle-outline</v-icon>
+                <h2>{{ status_booking.cancelled }}</h2>
+              </div>
+            </v-card-text>
+          </v-card>
+           <v-card style=" width: 30%;background-color: orange;">
             <v-card-title>
              Pending
             </v-card-title>
             <v-card-text>
               <div class="d-flex align-center" style="gap: 10px;">
-                <v-icon>mdi-progress-clock</v-icon>
-                <h2>10</h2>
+                <v-icon>mdi-clock-outline</v-icon>
+                <h2>{{ status_booking.pending }}</h2>
               </div>
             </v-card-text>
           </v-card>
@@ -45,9 +58,11 @@
         </v-card-text>
       </v-card>
       <v-card width="50%" style="height: 50vh;">
-        <v-card-title>
-          <v-icon class="mr-2">mdi-chart-line</v-icon>
-          Site Statistics
+        <v-card-title class="card-title">
+          <div>
+              <v-icon class="mr-2">mdi-chart-line</v-icon>
+              Site Statistics
+          </div>
         </v-card-title>
         <v-card-text>
          <div class="d-flex flex-wrap rent-statistics-wrapper">
@@ -58,18 +73,18 @@
             <v-card-text>
               <div class="d-flex align-center" style="gap: 10px;">
                 <v-icon>mdi-account-multiple</v-icon>
-                <h2>30</h2>
+                <h2>{{ total_users }}</h2>
               </div>
             </v-card-text>
           </v-card>
            <v-card style="width: 40%; background-color: gray;">
             <v-card-title>
-             Processing
+              Total Items
             </v-card-title>
             <v-card-text>
               <div class="d-flex align-center" style="gap: 10px;">
-                <v-icon>mdi-key</v-icon>
-                <h2>12</h2>
+                <v-icon>mdi-cube-outline</v-icon>
+                <h2>{{ total_items }}</h2>
               </div>
             </v-card-text>
           </v-card>
@@ -79,7 +94,7 @@
             </v-card-title>
             <v-card-text>
               <div class="d-flex align-center" style="gap: 10px;">
-                <h2>₱ 15000</h2>
+                <h2>₱ {{ handleAddCommas(total_earnings) }}</h2>
               </div>
             </v-card-text>
           </v-card>
@@ -88,79 +103,167 @@
       </v-card>
     </div>
     <div class="mb-4 mx-4">
-      <v-card >
-        <v-card-title class="d-flex align-center justify-space-between">
-          <div style="flex: 1;">
-            <v-icon class="mr-2">mdi-chart-bar</v-icon>
-            Rent Statistics
-          </div>
-          <div class="d-flex align-center" style="gap: 10px;">
-              <v-menu
-                ref="menu1"
-                v-model="menu1"
-                :close-on-content-click="false"
-                transition="scale-transition"
-                offset-y
-                max-width="290px"
-                min-width="auto"
-                
-              >
-                <template v-slot:activator="{ on, attrs }">
-                  <v-text-field
-                    v-model="dateFormatted"
-                    label="Date From"
-                    persistent-hint
-                    style="width: 290px;"
-                    prepend-icon="mdi-calendar"
-                    v-bind="attrs"
-                    @blur="date = parseDate(dateFormatted)"
-                    v-on="on"
-                    dense
-                    hide-details
-                    outlined
-                  ></v-text-field>
-                </template>
-                <v-date-picker
-                  v-model="date"
-                  no-title
-                  @input="menu1 = false"
-                ></v-date-picker>
-              </v-menu>
-              <v-menu
-                v-model="menu2"
-                :close-on-content-click="false"
-                transition="scale-transition"
-                offset-y
-                max-width="290px"
-                min-width="auto"
-              >
-                <template v-slot:activator="{ on, attrs }">
-                  <v-text-field
-                    v-model="dateFormatted"
-                    label="Date To"
-                    persistent-hint
-                    style="width: 290px;"
-                    prepend-icon="mdi-calendar"
-                    readonly
-                    hide-details
-                    v-bind="attrs"
-                    v-on="on"
+        <template>
+          <v-card>
+            <v-card-title class="d-flex justify-space-between align-center card-title">
+              <div>
+                <v-icon class="mr-2">mdi-chart-bar</v-icon>
+                Rent Statistics
+              </div>
+            </v-card-title>
+
+            <v-card-text class="d-flex flex-row flex-wrap justify-space-between align-center" style="gap: 20px;">
+              <!-- Filter Controls -->
+                <!-- Filter Type -->
+               <h2 style="color: black;">Total : {{ total }}</h2>
+               <div class="d-flex flex-wrap" style="gap: 20px;">
+                <div class="d-flex align-center mb-4" style="gap: 10px; min-width: 200px;">
+                  <label >Filter by:</label>
+                  <v-select
+                    v-model="filterType"
+                    :items="['Day', 'Date Range', 'Monthly', 'Yearly']"
                     dense
                     outlined
-                  ></v-text-field>
-                </template>
-                <v-date-picker
-                  v-model="date"
-                  no-title
-                  @input="menu2 = false"
-                ></v-date-picker>
-              </v-menu>
-          </div>
-        </v-card-title>
-        <v-card-text>
-          <Bar/>
-        </v-card-text>
-      </v-card>
+                    hide-details
+                    style="max-width: 150px;"
+                  />
+                </div>
+                <div class="d-flex flex-wrap align-center mb-4" style="gap: 15px;">
+                  
+                  <!-- Day -->
+                  <v-menu
+                    v-if="filterType === 'Day'"
+                    v-model="menuDay"
+                    :close-on-content-click="false"
+                    transition="scale-transition"
+                    offset-y
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="day"
+                        label="Select Day"
+                        prepend-icon="mdi-calendar"
+                        readonly
+                        dense
+                        outlined
+                        v-bind="attrs"
+                        v-on="on"
+                        hide-details
+                        style="max-width: 300px;"
+                      />
+                    </template>
+                    <v-date-picker
+                      v-model="day"
+                      @input="menuDay = false; applyFilter()"
+                    />
+                  </v-menu>
+
+                  <!-- Date Range -->
+                 
+                  <v-menu
+                    v-if="filterType === 'Date Range'"
+                    v-model="menuFrom"
+                    :close-on-content-click="false"
+                    transition="scale-transition"
+                    offset-y
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="dateFrom"
+                        label="From"
+                        prepend-icon="mdi-calendar"
+                        readonly
+                        dense
+                        outlined
+                        v-bind="attrs"
+                        v-on="on"
+                        hide-details
+                        style="max-width: 300px;"
+                      />
+                    </template>
+                    <v-date-picker
+                      v-model="dateFrom"
+                      @input="menuFrom = false; applyFilter()"
+                    />
+                  </v-menu>
+                   <v-menu
+                    v-if="filterType === 'Date Range'"
+                    v-model="menuTo"
+                    :close-on-content-click="false"
+                    transition="scale-transition"
+                    offset-y
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="dateTo"
+                        label="To"
+                        prepend-icon="mdi-calendar"
+                        readonly
+                        dense
+                        outlined
+                        v-bind="attrs"
+                        v-on="on"
+                        hide-details
+                        style="max-width: 200px;"
+                      />
+                    </template>
+                    <v-date-picker
+                      v-model="dateTo"
+                      @input="menuTo = false; applyFilter()"
+                    />
+                  </v-menu>
+
+                  <!-- Monthly -->
+                  <v-menu
+                    v-if="filterType === 'Monthly'"
+                    v-model="menuMonth"
+                    :close-on-content-click="false"
+                    transition="scale-transition"
+                    offset-y
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-text-field
+                        v-model="month"
+                        label="Select Month"
+                        prepend-icon="mdi-calendar-month"
+                        readonly
+                        dense
+                        outlined
+                        v-bind="attrs"
+                        v-on="on"
+                        hide-details
+                        style="max-width: 200px;"
+                      />
+                    </template>
+                    <v-date-picker
+                      v-model="month"
+                      type="month"
+                      @input="menuMonth = false; applyFilter()"
+                    />
+                  </v-menu>
+
+                  <!-- Yearly -->
+                  <v-select
+                    v-if="filterType === 'Yearly'"
+                    v-model="year"
+                    :items="years"
+                    label="Select Year"
+                    dense
+                    outlined
+                    hide-details
+                    style="max-width: 200px;"
+                    @change="applyFilter"
+                  />
+                </div>
+                <div>
+                  <v-btn color="primary" @click="handleSearch">Search</v-btn>
+                </div>
+              </div>
+              <!-- Chart -->
+              <Bar :data="data" :categories="categories" />
+            </v-card-text>
+          </v-card>
+        </template>
     </div>
   </div>
 </template>
@@ -171,106 +274,36 @@
     components: {
       Bar,
     },
-    data: () => vm =>({
-      date: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10),
-      dateFormatted: vm.formatDate((new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substr(0, 10)),
-      menu1: false,
-      menu2: false,
-      desserts: [
-        {
-          name: 'Frozen Yogurt',
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-          iron: 1,
-        },
-        {
-          name: 'Ice cream sandwich',
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3,
-          iron: 1,
-        },
-        {
-          name: 'Eclair',
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0,
-          iron: 7,
-        },
-        {
-          name: 'Cupcake',
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3,
-          iron: 8,
-        },
-        {
-          name: 'Gingerbread',
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9,
-          iron: 16,
-        },
-        {
-          name: 'Jelly bean',
-          calories: 375,
-          fat: 0.0,
-          carbs: 94,
-          protein: 0.0,
-          iron: 0,
-        },
-        {
-          name: 'Lollipop',
-          calories: 392,
-          fat: 0.2,
-          carbs: 98,
-          protein: 0,
-          iron: 2,
-        },
-        {
-          name: 'Honeycomb',
-          calories: 408,
-          fat: 3.2,
-          carbs: 87,
-          protein: 6.5,
-          iron: 45,
-        },
-        {
-          name: 'Donut',
-          calories: 452,
-          fat: 25.0,
-          carbs: 51,
-          protein: 4.9,
-          iron: 22,
-        },
-        {
-          name: 'KitKat',
-          calories: 518,
-          fat: 26.0,
-          carbs: 65,
-          protein: 7,
-          iron: 6,
-        },
-      ],
-      headers: [
-        {
-          text: 'Dessert (100g serving)',
-          align: 'start',
-          sortable: false,
-          value: 'name',
-        },
-        { text: 'Calories', value: 'calories' },
-        { text: 'Fat (g)', value: 'fat' },
-        { text: 'Carbs (g)', value: 'carbs' },
-        { text: 'Protein (g)', value: 'protein' },
-        { text: 'Iron (%)', value: 'iron' },
-      ],
+    data: () => ({
+      filterType: "Date Range", // default
+      menuDay: false,
+      menuFrom: false,
+      menuTo: false,
+      menuMonth: false,
+      total: 0,
+      // Day
+      day: new Date().toISOString().substr(0, 10),
+      // Date Range
+      dateFrom: new Date().toISOString().substr(0, 10),
+      dateTo: new Date(new Date().getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().substr(0, 10),
+      // Month
+      month: new Date().toISOString().substr(0, 7),
+      // Year
+      year: new Date().getFullYear(),
+      years: Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i),
+
+      categories: [], 
+      data: [],
+
+      total_items: 0,
+      total_users: 0,
+      total_earnings: 0,
+      status_booking: {
+        completed: 0,
+        confirmed: 0,
+        cancelled: 0,
+        pending: 0
+      },
     }),
   computed: {
     computedDateFormatted () {
@@ -278,9 +311,40 @@
     },
   },
   mounted() {
-      // this.$awn.success('Notification is working!')
+      this.handleSearch()
   },
   methods: {
+    handleAddCommas(number) {
+      if (!number && number !== 0) return 0;
+      return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    },
+    handleSearch () {
+        this.$notiflix.Loading.arrows();
+        this.submitLoading = true;
+        this.axios.post(`/booking/get-filtered-bookings`, {
+            filterType: this.filterType,
+            day: this.day,
+            dateFrom: this.dateFrom,
+            dateTo: this.dateTo,
+            month: this.month,
+            year: this.year
+        }).then((res)=>{
+            if(res.data.success){
+                this.categories = res.data.categories;
+                this.total = res.data.total;
+                this.data = res.data.data;
+                this.total_items = res.data.items;
+                this.total_users = res.data.users;
+                this.total_earnings = res.data.total_earnings;
+                this.status_booking = res.data.status_bookings;
+            }
+        }).catch((error)=>{
+            console.log(error,'error')
+        }).finally(()=>{
+            this.submitLoading = false;
+            this.$notiflix.Loading.remove();
+        })
+    },
     trys(e){
       this.$awn.info('This is an info message!')
       console.log(e)
@@ -294,6 +358,13 @@
     gap: 20px;
   }
   .rent-statistics-wrapper * {
+    color: #fff !important;
+  }
+  .card-title  {
+    background: #212121;
+    margin-bottom: 15px;
+  }
+  .card-title  *{
     color: #fff !important;
   }
 </style>

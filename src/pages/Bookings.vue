@@ -22,9 +22,9 @@
       <v-card-text>
         <v-data-table
           :headers="headers"
-          :items="bookings?.data"
+          :items="bookings.data"
           :items-per-page="10"
-          :server-items-length="bookings?.total"
+          :server-items-length="bookings.total"
           :page.sync="page"
           item-key="id"
         >
@@ -84,8 +84,8 @@
            <template v-slot:item.payment_proof="{ item }">
             <v-img
               v-if="item.payments"
-              :src="item.payments?.proof_of_payment_url"
-              @click="handleShowImages([item.payments?.proof_of_payment_url])"
+              :src="item.payments.proof_of_payment_url"
+              @click="handleShowImages([item.payments.proof_of_payment_url])"
               max-width="70"
               max-height="70"
               contain
@@ -115,159 +115,160 @@
       <!-- Drawer for Order Details -->
       <CategoryModal :show_modal="show_modal" @closeModal="handleCloModal" :item_selected="edit_item" @fetchRecords="handleGetCatoregories"/>
     </v-card>
-    <v-navigation-drawer
-      v-model="showOrderDrawer"
-      right
-      absolute
-      temporary
-      width="500"
-    >
-      <v-card flat>
-        <v-card-title>
-          Order #{{ selectedOrder?.id }}
-          <v-spacer></v-spacer>
-          <v-btn icon @click="showOrderDrawer = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-divider></v-divider>
+    <template v-if="selectedOrder">
+      <v-navigation-drawer
+        v-model="showOrderDrawer"
+        right
+        absolute
+        temporary
+        width="500"
+      >
+        <v-card flat>
+          <v-card-title>
+            Order #{{ selectedOrder.id }}
+            <v-spacer></v-spacer>
+            <v-btn icon @click="showOrderDrawer = false">
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-card-title>
+          <v-divider></v-divider>
 
-        <!-- Tabs -->
-        <v-tabs v-model="orderTab" dark>
-          <v-tab>Order Details</v-tab>
-          <v-tab>Items</v-tab>
-        </v-tabs>
+          <!-- Tabs -->
+          <v-tabs v-model="orderTab" dark>
+            <v-tab>Order Details</v-tab>
+            <v-tab>Items</v-tab>
+          </v-tabs>
 
-        <v-tabs-items v-model="orderTab">
-          <!-- Items Tab -->
-        
+          <v-tabs-items v-model="orderTab">
+            <!-- Items Tab -->
+          
 
-          <!-- Order Details Tab -->
-         <v-tab-item>
-            <v-card-text>
-              <v-row dense>
-                <!-- Ordered By -->
-                <v-col cols="12">
-                  <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
-                    <v-icon color="primary" class="mr-3">mdi-account</v-icon>
-                    <div>
-                      <div class="text-caption text-grey">Ordered By</div>
-                      <div class="text-subtitle-1 font-weight-medium">
-                        {{ selectedOrder?.user?.full_name ? selectedOrder?.user?.full_name : selectedOrder?.user?.email }}
+            <!-- Order Details Tab -->
+          <v-tab-item>
+              <v-card-text>
+                <v-row dense>
+                  <!-- Ordered By -->
+                  <v-col cols="12">
+                    <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
+                      <v-icon color="primary" class="mr-3">mdi-account</v-icon>
+                      <div>
+                        <div class="text-caption text-grey">Ordered By</div>
+                        <div class="text-subtitle-1 font-weight-medium">
+                          {{ selectedOrder.user.full_name ? selectedOrder.user.full_name : selectedOrder.user.email }}
+                        </div>
                       </div>
-                    </div>
-                  </v-card>
-                </v-col>
-                <v-col cols="12">
-                  <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
-                    <v-icon color="primary" class="mr-3">mdi-phone</v-icon>
-                    <div>
-                      <div class="text-caption text-grey">Phone Number</div>
-                      <div class="text-subtitle-1 font-weight-medium">
-                        {{ handleDecodeData(selectedOrder?.delivery_info) ? handleDecodeData(selectedOrder?.delivery_info).phone : 'N/A' }}
+                    </v-card>
+                  </v-col>
+                  <v-col cols="12">
+                    <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
+                      <v-icon color="primary" class="mr-3">mdi-phone</v-icon>
+                      <div>
+                        <div class="text-caption text-grey">Phone Number</div>
+                        <div class="text-subtitle-1 font-weight-medium">
+                          {{ handleDecodeData(selectedOrder.delivery_info) ? handleDecodeData(selectedOrder.delivery_info).phone : 'N/A' }}
+                        </div>
                       </div>
-                    </div>
-                  </v-card>
-                </v-col>
+                    </v-card>
+                  </v-col>
 
-                <!-- Address -->
-                <v-col cols="12">
-                  <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
-                    <v-icon color="deep-orange" class="mr-3">mdi-map-marker</v-icon>
-                    <div>
-                      <div class="text-caption text-grey">Address</div>
-                      <div class="text-subtitle-1 font-weight-medium">
-                      {{ handleDecodeData(selectedOrder?.delivery_info) ? handleDecodeData(selectedOrder?.delivery_info).address : 'N/A' }}
+                  <!-- Address -->
+                  <v-col cols="12">
+                    <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
+                      <v-icon color="deep-orange" class="mr-3">mdi-map-marker</v-icon>
+                      <div>
+                        <div class="text-caption text-grey">Address</div>
+                        <div class="text-subtitle-1 font-weight-medium">
+                        {{ handleDecodeData(selectedOrder.delivery_info) ? handleDecodeData(selectedOrder.delivery_info).address : 'N/A' }}
+                        </div>
                       </div>
-                    </div>
-                  </v-card>
-                </v-col>
+                    </v-card>
+                  </v-col>
 
-                <!-- Booking Date -->
-                <v-col cols="12">
-                  <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
-                    <v-icon color="indigo" class="mr-3">mdi-calendar</v-icon>
-                    <div>
-                      <div class="text-caption text-grey">Booking Date</div>
-                      <div class="font-weight-medium">
-                        From : {{ handleChangeFormat(selectedOrder?.start_date) }}
+                  <!-- Booking Date -->
+                  <v-col cols="12">
+                    <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
+                      <v-icon color="indigo" class="mr-3">mdi-calendar</v-icon>
+                      <div>
+                        <div class="text-caption text-grey">Booking Date</div>
+                        <div class="font-weight-medium">
+                          From : {{ handleChangeFormat(selectedOrder.start_date) }}
+                        </div>
+                        <div class="font-weight-medium">
+                          To : {{ handleChangeFormat(selectedOrder.end_date) }}
+                        </div>
                       </div>
-                      <div class="font-weight-medium">
-                        To : {{ handleChangeFormat(selectedOrder?.end_date) }}
+                    </v-card>
+                  </v-col>
+
+                  <!-- Status -->
+                  <v-col cols="12">
+                    <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
+                      <v-icon color="green" class="mr-3">mdi-check-circle</v-icon>
+                      <div>
+                        <div class="text-caption text-grey">Status</div>
+                        <v-chip
+                          :color="getStatusColor(selectedOrder.status)"
+                          dark
+                          class="mt-1"
+                          label
+                        >
+                          {{ selectedOrder.status }}
+                        </v-chip>
                       </div>
-                    </div>
-                  </v-card>
-                </v-col>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-tab-item>
 
-                <!-- Status -->
-                <v-col cols="12">
-                  <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
-                    <v-icon color="green" class="mr-3">mdi-check-circle</v-icon>
-                    <div>
-                      <div class="text-caption text-grey">Status</div>
-                      <v-chip
-                        :color="getStatusColor(selectedOrder?.status)"
-                        dark
-                        class="mt-1"
-                        label
-                      >
-                        {{ selectedOrder?.status }}
-                      </v-chip>
-                    </div>
-                  </v-card>
-                </v-col>
-              </v-row>
-            </v-card-text>
-          </v-tab-item>
+              <v-tab-item>
+              <v-card-text>
+                <div v-if="selectedOrder.booking_details.length">
+                  <v-list two-line>
+                    <v-list-item
+                      v-for="(product, index) in selectedOrder.booking_details"
+                      :key="index"
+                    >
+                      <v-img
+                        :src="product.item.images[0].image_url"
+                        max-width="80"
+                        class="mr-3"
+                      />
+                      <v-list-item-content>
+                        <v-list-item-title>{{ product.item.name }}</v-list-item-title>
+                        <v-list-item-subtitle>
+                          Qty: {{ product.quantity }} × ₱ {{ handleChangeMoneyFormat(product.item.price_per_day) }}
+                        </v-list-item-subtitle>
+                      </v-list-item-content>
 
-            <v-tab-item>
-            <v-card-text>
-              <div v-if="selectedOrder?.booking_details?.length">
-                <v-list two-line>
-                  <v-list-item
-                    v-for="(product, index) in selectedOrder.booking_details"
-                    :key="index"
-                  >
-                    <v-img
-                      :src="product.item?.images[0]?.image_url"
-                      max-width="80"
-                      class="mr-3"
-                    />
-                    <v-list-item-content>
-                      <v-list-item-title>{{ product.item?.name }}</v-list-item-title>
-                      <v-list-item-subtitle>
-                        Qty: {{ product.quantity }} × ₱ {{ handleChangeMoneyFormat(product.item?.price_per_day) }}
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
+                      <v-list-item-action>
+                        <span class="font-weight-bold">
+                          ₱ {{ handleChangeMoneyFormat(product.quantity * product.item.price_per_day) }}
+                        </span>
+                      </v-list-item-action>
+                    </v-list-item>
+                  </v-list>
 
-                    <v-list-item-action>
-                      <span class="font-weight-bold">
-                        ₱ {{ handleChangeMoneyFormat(product.quantity * product.item?.price_per_day) }}
-                      </span>
-                    </v-list-item-action>
-                  </v-list-item>
-                </v-list>
-
-                <v-divider class="my-3"></v-divider>
-                <div class="d-flex justify-space-between">
-                  <span>Total Days:</span>
-                  <strong>{{ handleComputeTotalDays(selectedOrder?.start_date, selectedOrder?.end_date) }}</strong>
+                  <v-divider class="my-3"></v-divider>
+                  <div class="d-flex justify-space-between">
+                    <span>Total Days:</span>
+                    <strong>{{ handleComputeTotalDays(selectedOrder.start_date, selectedOrder.end_date) }}</strong>
+                  </div>
+                  <div class="d-flex justify-space-between">
+                    <span>Total:</span>
+                    <strong>₱ {{ handleChangeMoneyFormat(selectedOrder.total_price) }}</strong>
+                  </div>
                 </div>
-                <div class="d-flex justify-space-between">
-                  <span>Total:</span>
-                  <strong>₱ {{ handleChangeMoneyFormat(selectedOrder.total_price) }}</strong>
+                <div v-else>
+                  <em>No items found for this order.</em>
                 </div>
-              </div>
-              <div v-else>
-                <em>No items found for this order.</em>
-              </div>
-            </v-card-text>
-          </v-tab-item>
+              </v-card-text>
+            </v-tab-item>
 
-        </v-tabs-items>
-      </v-card>
-    </v-navigation-drawer>
-
+          </v-tabs-items>
+        </v-card>
+      </v-navigation-drawer>
+    </template>
      <vue-easy-lightbox
       :visible="visible"
       :imgs="images"
@@ -321,6 +322,7 @@ export default {
   },
   methods: {
       handleComputeTotalDays(startDate, endDate) {
+        if (!startDate || !endDate) return 0;
         const start = moment(startDate);
         const end = moment(endDate);
         return end.diff(start, 'days'); // +1 to include the start day

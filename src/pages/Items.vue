@@ -134,9 +134,9 @@
       <v-card>
         <v-card-title class="d-flex justify-space-between align-center">
           <span>
-            Reviews ({{ item_selected?.reviews_count ? item_selected.reviews_count : 0 }})
+            Reviews ({{ item_selected && item_selected.reviews_count ? item_selected.reviews_count : 0 }})
           </span>
-          <v-rating :value="item_selected?.reviews_avg_rating ? item_selected.reviews_avg_rating : 0" color="yellow darken-3" dense readonly></v-rating>
+          <v-rating :value="item_selected && item_selected.reviews_avg_rating ? item_selected.reviews_avg_rating : 0" color="yellow darken-3" dense readonly></v-rating>
         </v-card-title>
         <v-divider></v-divider>
         <v-card-text>
@@ -170,15 +170,15 @@
         <v-card>
           <v-card-title>
             <v-icon left color="primary">mdi-account-circle</v-icon>
-            <span class="text-h6">{{ fullReview?.user?.full_name }}</span>
+            <span class="text-h6">{{ fullReview && fullReview.user.full_name }}</span>
             <v-spacer></v-spacer>
-            <v-rating :value="fullReview?.rating" color="yellow darken-3" dense readonly />
+            <v-rating :value="fullReview && fullReview.rating" color="yellow darken-3" dense readonly />
           </v-card-title>
 
           <v-divider></v-divider>
 
           <v-card-text>
-            <p class="text-body-1 mt-4">{{ fullReview?.comment }} </p>
+            <p class="text-body-1 mt-4">{{ fullReview && fullReview.comment }} </p>
           </v-card-text>
 
           <v-card-actions>

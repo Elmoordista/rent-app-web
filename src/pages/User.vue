@@ -4,12 +4,15 @@
       <v-card-title style="width: 100%;">User Information</v-card-title>
       <div style="width: 500px; padding: 10px;">
           <v-text-field
-              name="Username"
-              label="Username"
+              label="Search"
               rounded
               background-color=""
-              solo
+              outlined
               dense
+              v-model="search"
+              @keyup.enter="handleSearchRecord"
+              @click:clear="handleSearchRecord"
+              clearable
               hide-details=""
           ></v-text-field>
       </div>

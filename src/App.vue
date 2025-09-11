@@ -29,8 +29,28 @@
             <v-icon style="color: white;">{{ link.icon }}</v-icon>
           </v-list-item-icon>
 
-          <v-list-item-content style="color: white;">
-            <v-list-item-title>{{ link.text }}</v-list-item-title>
+          <v-list-item-content style="color: white; padding: 0;">
+            <v-list-item-title>
+                {{ link.text }}
+                <v-tooltip
+                  v-if="link.text === 'Bookings' && booking_pending > 0"
+                  right
+                >
+                  <template v-slot:activator="{ on, attrs }">
+                      <v-avatar
+                      v-bind="attrs"
+                      v-on="on"
+                      size="20"
+                      class="ml-2"
+                      color="red"
+                    >
+                      <span style="color: white; font-size: 12px;">{{booking_pending}}</span>
+                    </v-avatar>
+                  </template>
+                  <span>You have {{booking_pending}} pending bookings</span>
+                </v-tooltip>
+            </v-list-item-title>
+            
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -110,6 +130,7 @@ export default {
     menu: false,
     message: false,
     hints: true,
+    booking_pending: 0,
     links: [
       {
         icon: 'mdi-view-dashboard',
@@ -139,6 +160,11 @@ export default {
     ],
   }),
 
+  mounted() {
+    // Fetch notifications when the component is mounted
+    this.handleGetNotifications();
+  },
+
   computed: {
     // Check if the current route is the login page
     isLoginPage() {
@@ -146,6 +172,20 @@ export default {
     }
   },
   methods: {
+     handleGetNotifications () {
+        this.$notiflix.Loading.arrows();
+        this.submitLoading = true;
+        this.axios.get(`/booking/get-pendings`).then((res)=>{
+            if(res.status){
+                this.booking_pending = res.data.data;
+            }
+        }).catch((error)=>{
+            console.log(error,'error')
+        }).finally(()=>{
+            this.submitLoading = false;
+            this.$notiflix.Loading.remove();
+        })
+    },
     handleLogout() {
      this.$notiflix.Confirm.show(
         'Logout',
