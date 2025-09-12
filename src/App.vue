@@ -178,8 +178,10 @@ export default {
   },
 
   mounted() {
-    this.handleGetNotifications();
-    this.getGcashAccount();
+    if(localStorage.getItem('token')) {
+      this.handleGetNotifications();
+      this.getGcashAccount();
+    }
   },
 
   methods: {

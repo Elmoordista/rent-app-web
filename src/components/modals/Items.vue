@@ -37,8 +37,40 @@
               outlined
               hide-details="auto"
             ></v-text-field>
-            <div class="mb-4">
-                <input
+           <div class="d-flex gap-4  flex-column mb-4" style="border: 1px solid #E0E0E0; border-radius: 8px; padding: 10px; gap: 10px;">
+              <!-- Sizes & Colors Switch -->
+              <v-switch
+                hide-details
+                v-model="payload.has_sizes_color_options"
+                label="Enable size & color options"
+                inset
+                color="indigo"
+                class="mt-2"
+              >
+                <template v-slot:label>
+                  <v-icon size="20" color="indigo" class="mr-2">mdi-palette</v-icon>
+                  Enable size & color options
+                </template>
+              </v-switch>
+
+              <!-- Driver License Switch -->
+              <v-switch
+                hide-details
+                v-model="payload.need_driver_license"
+                label="Need driver license"
+                inset
+                color="deep-orange"
+                class="mt-2"
+              >
+                <template v-slot:label>
+                  <v-icon size="20" color="deep-orange" class="mr-2">mdi-card-account-details</v-icon>
+                  Require driver license
+                </template>
+              </v-switch>
+
+            </div>
+
+             <input
                     type="file"
                     ref="file_input"
                     multiple
@@ -46,6 +78,100 @@
                     accept="image/*"
                     @change="getFiles"
                 />
+
+            <div v-if="payload.has_sizes_color_options" class="mb-4">
+                <v-card outlined>
+                  <v-simple-table>
+                    <thead>
+                      <tr>
+                        <th class="text-left">Image</th>
+                        <th class="text-left">Size</th>
+                        <th class="text-left">Color</th>
+                        <th class="text-left">Quantity</th>
+                        <th class="text-left">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="(row, index) in payload.sizes_colors"
+                        :key="index"
+                      >
+                      <template v-if="!row.is_deleted || row.is_deleted == undefined">
+                        <td>
+                          <v-img @click="handleClickImage(index)"
+                            v-if="row.file_path || row.image_url != undefined"
+                            :src="row.file_path ? row.file_path : row.image_url"
+                            style="width: 70px; max-width: 70px; object-fit: contain; height: fit-content;"
+                          ></v-img>
+                          <div class="no-image" v-else @click="handleClickImage(index)">
+                            <small>No Image</small>
+                            <small>click to upload</small>
+                          </div>
+                        </td>
+                        <td>
+                          <v-text-field
+                            v-model="row.size"
+                            :disabled="!payload.has_sizes_color_options"
+                            dense
+                            outlined
+                            :rules="handleValidation('Size')"
+                            hide-details
+                            placeholder="Enter size"
+                          />
+                        </td>
+                        <td>
+                          <v-text-field
+                            v-model="row.color"
+                            :disabled="!payload.has_sizes_color_options"
+                            dense
+                            :rules="handleValidation('Color')"
+                            outlined
+                            hide-details
+                            placeholder="Enter color"
+                          />
+                        </td>
+                        <td>
+                          <v-text-field
+                            v-model.number="row.quantity"
+                            :disabled="!payload.has_sizes_color_options"
+                            type="number"
+                            dense
+                            outlined
+                            @input="handleUpdateAvailable()"
+                            @keydown="isNumber($event)"
+                            hide-details="auto"
+                            placeholder="Enter qty"
+                          />
+                        </td>
+                        <td>
+                          <v-btn
+                            icon
+                            color="red"
+                            @click="removeRow(index, row)"
+                            :disabled="!payload.has_sizes_color_options"
+                          >
+                            <v-icon>mdi-delete</v-icon>
+                          </v-btn>
+                        </td>
+                      </template>
+                      </tr>
+                    </tbody>
+                  </v-simple-table>
+                  <v-card-actions style="background-color: #f5f5f5; margin-top: 10px;">
+                    <v-btn
+                      color="primary"
+                      text
+                      @click="addRow"
+                      :disabled="!payload.has_sizes_color_options"
+                    >
+                      Add Row
+                      <v-icon class="ms-2" size="18">mdi-plus-circle</v-icon>
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+            </div>
+  
+            <div class="mb-4" v-else>
                 <div class="mb-2 d-flex align-center justify-space-between">
                   <span style="color: black;">Images</span>
                   <v-btn color="primary" text small @click="handleSelectFile">
@@ -100,6 +226,7 @@
                 label="Price Per Day"
                 class="mb-4"
                 required
+                 @keydown="isNumber($event)"
                 dense
                 :rules="handleValidation('Item Name')"
                 outlined
@@ -114,6 +241,8 @@
                 class="mb-4"
                 required
                 dense
+                 @keydown="isNumber($event)"
+                :readonly="payload.has_sizes_color_options"
                 :rules="handleValidation('Item Name')"
                 outlined
                 style="width: 50%;"
@@ -167,15 +296,27 @@
         owners: [],
         formValid: false,
         show_password: false,
+        selected_row: null,
         payload: {
           category_id:'',
           name: '',
+          has_sizes_color_options: false,
+          need_driver_license: false,
           description: '',
           images: [],
           status: 'active',
           price_per_day: 0,
           available: 0,
           owner_id:'',
+          sizes_colors: [
+            { 
+              id: null,
+              file_path: null,
+              size: "", 
+              color: "", 
+              quantity: 0 
+            }
+          ],
         },  
         rules: {
           required: v => !!v || 'This field is required',
@@ -186,6 +327,14 @@
     watch: {
       'show_modal'(newValue) {
         this.dialog = newValue;
+      },
+      'payload.sizes_colors'(newValue) {
+          let totalQty = 0;
+          console.log(newValue);
+          newValue.forEach((item)=>{
+            totalQty += parseInt(item.quantity);
+          })
+          this.payload.available = totalQty;
       },
       'item_selected'(newValue) {
         if(newValue){
@@ -200,8 +349,19 @@
               price_per_day : newVals.price_per_day,
               available : newVals.available,
               owner_id : newVals.owner_id,
+              has_sizes_color_options: newVals.has_sizes_color_options ? newVals.has_sizes_color_options ? true : false : false,
+              need_driver_license: newVals.need_driver_license ? newVals.need_driver_license ? true : false : false,
+              sizes_colors : newVals.variations && newVals.variations.length > 0 ? newVals.variations.map((item)=>{
+                return {
+                  id: item.id,
+                  image_url: item.image_url,
+                  file_path: null,
+                  size: item.size,
+                  color: item.color,
+                  quantity: item.quantity,
+                }
+              }) : [{ size: "", color: "", quantity: 0 }],
           };
-           console.log(this.payload,'this.payload')
         }
       }
     },
@@ -209,11 +369,50 @@
       this.handleGetOwners();
     },
     methods: {
+      isNumber(e){
+          const keysAllowed = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', 'Backspace'];
+          const keyPressed = e.key;
+
+          if (!keysAllowed.includes(keyPressed)) {
+              e.preventDefault()
+          }
+      },
+      handleUpdateAvailable(){
+          let totalQty = 0;
+          this.payload.sizes_colors.forEach((item)=>{
+            totalQty += parseInt(item.quantity);
+          })
+          this.payload.available = totalQty;
+      },
+      addRow() {
+        this.payload.sizes_colors.push(
+          { 
+            id: null,
+            file_path: null,
+            size: "",
+            color: "", 
+            quantity: 0 });
+      },
+      removeRow(index, row) {
+        if(row.id){
+          const oldSizesColors = this.payload.sizes_colors;
+          oldSizesColors[index]['is_deleted'] = true;
+          this.payload.sizes_colors = [];
+          this.payload.sizes_colors = oldSizesColors;
+        }
+        else{
+          this.payload.sizes_colors.splice(index, 1);
+        }
+      },
       handleRemoveImage(index) {
         const oldImage = this.payload.images;
         oldImage[index]['deleted'] = true;
         this.payload.images = [];
         this.payload.images = oldImage;
+      },
+      handleClickImage(index) {
+        this.selected_row = index;
+        this.$refs.file_input.click();
       },
       handleSelectFile() {
         this.$refs.file_input.click();
@@ -225,17 +424,27 @@
               var split = dataFile["type"].split("/");
               if (this.fileRequire.includes(split[0])) {
                   if (dataFile["size"] <= 15000000) {
-                      var data = {
-                          file_type: dataFile["type"],
-                          file_size: dataFile["size"],
-                          file_name: dataFile["name"],
-                      };
-                      var reader = new FileReader();
-                      reader.onload = (e) => {
-                          data["file_path"] = e.target.result;
-                          this.payload.images.push(data);
-                      };
-                      reader.readAsDataURL(dataFile);
+                     if(this.selected_row !== null && this.payload.has_sizes_color_options){
+                        var reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.payload.sizes_colors[this.selected_row]['file_path'] = e.target.result;
+                            this.selected_row = null;
+                        };
+                        reader.readAsDataURL(dataFile);
+                      }else{
+                          var datas = {
+                              file_type: dataFile["type"],
+                              file_size: dataFile["size"],
+                              file_name: dataFile["name"],
+                          };
+                          var readerFile = new FileReader();
+                          readerFile.onload = (e) => {
+                              datas["file_path"] = e.target.result;
+                              this.payload.images.push(datas);
+                          };
+                          readerFile.readAsDataURL(dataFile);
+                      }
+
                   } else {
                       this.$awn.error(`The file ${dataFile['name']} too large for the 15MB limit`)
                   }
@@ -270,14 +479,40 @@
           price_per_day: 0,
           available: 0,
           owner_id:'',
+          has_sizes_color_options: false,
+          need_driver_license: false,
+          sizes_colors: [
+            { 
+              id: null,
+              file_path: null,
+              size: "", 
+              color: "", 
+              quantity: 0 
+            }
+          ],
         };
         this.formValid = false
       },
       saveUserInfo () {
         if (this.$refs.form.validate()) {
-          if(this.payload.images.length == 0){
+          if(this.payload.images.length == 0 && !this.payload.has_sizes_color_options){
             this.$awn.warning('Please select at least one image');
             return;
+          }
+          else if (this.payload.has_sizes_color_options){
+            let valid = true;
+            this.payload.sizes_colors.forEach((item)=>{
+              if(!item.size || !item.color || item.quantity == 0 || (!item.file_path && !item.id)){
+                valid = false;
+              }
+            })
+            if(!valid){
+              this.$awn.warning('Please fill all size & color options fields && select image');
+              return;
+            }
+            else{
+              this.handleSaveitems()
+            }
           }
           else{
             this.handleSaveitems()
@@ -318,6 +553,24 @@
         })
       }
     },
+
   }
 </script>
+
+<style >
+.no-image{
+  margin-top: 2px;
+  width: 100px; 
+  max-width: 100px; 
+  height: 50px; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
+  border: 1px dashed #BDBDBD; 
+  border-radius: 4px; 
+  color: #BDBDBD;
+  cursor: pointer;
+}
+</style>
 

@@ -71,7 +71,7 @@
             style="cursor: pointer;"
             type="rounded"
             max-width="50"
-            :src="item.images.length > 0 ? item.images[0].image_url : ''" 
+            :src="item.images.length > 0 ? item.images[0].image_url : item.variations.length > 0 ? item.variations[0].image_url : ''" 
             @click="handleShowImages(item.images)" 
           />
         </template>
