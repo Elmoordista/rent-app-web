@@ -72,7 +72,7 @@
             type="rounded"
             max-width="50"
             :src="!item.has_sizes_color_options && item.images.length > 0 ? item.images[0].image_url : item.variations.length > 0 ? item.variations[0].image_url : ''" 
-            @click="handleShowImages(item.images)" 
+            @click="handleShowImages(item)" 
           />
         </template>
 
@@ -92,6 +92,11 @@
             </v-chip>
           </div>
         </template>
+
+        <template v-slot:item.on_rent_qty="{ item }">
+           {{ item.available >  item.available_quantity ? item.available - item.available_quantity  : 'N/A' }}
+        </template>
+
 
          <template v-slot:item.category="{ item }">
            {{ item.category ? item.category.name : 'N/A' }}
@@ -226,6 +231,7 @@ export default {
         { text: 'Category', value: 'category' },
         { text: 'Owner', value: 'owner' },
         { text: 'Available', value: 'available' },
+        { text: 'On Rent Qty', value: 'on_rent_qty' },
         { text: 'Rent Per Day', value: 'price_per_day' },
         { text: 'Status', value: 'status' },
         { text: 'Total Reviews', value: 'total_reviews' },
@@ -253,10 +259,22 @@ export default {
             this.$notiflix.Loading.remove();
         })
       },
-      handleShowImages(images) {
-        const imageList = images.map((itemx)=>{
-          return itemx.image_url;
-        });
+      handleShowImages(item) {
+       var imageList = [];
+       if(item.has_sizes_color_options){
+          imageList = item.variations.map((itemx)=>{
+            return itemx.image_url;
+          });
+          this.images = imageList
+          this.currentIndex = 0
+          this.visible = true
+          return;
+       }
+       else{
+         imageList = item.images.map((itemx)=>{
+           return itemx.image_url;
+         });
+       }
         this.images = imageList
         this.currentIndex = 0
         this.visible = true
