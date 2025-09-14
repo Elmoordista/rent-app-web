@@ -60,9 +60,9 @@
         :headers="headers"
         :items="items.data"
         :server-items-length="items.total"
-        :page="items.current_page"
         :loading="tableLoading"
         :items-per-page="items.per_page"
+        :page.sync="current_page"
         item-key="id"
       >
 
@@ -191,7 +191,7 @@
             <v-btn text color="primary" @click="showFullReview = false">Close</v-btn>
           </v-card-actions>
         </v-card>
-      </v-dialog>
+    </v-dialog>
   </v-card>
 </template>
 
@@ -280,6 +280,7 @@ export default {
         this.visible = true
       },
       handleSearchRecord(){
+        this.current_page = 1;
         this.handleGetItems()
       },  
       handleCloModal(){
@@ -320,6 +321,7 @@ export default {
       },
       handleGetItems () {
         this.tableLoading = true;
+        this.$notiflix.Loading.arrows();
         this.axios.get('/items', {
           params: {
             page: this.current_page,
@@ -358,6 +360,11 @@ export default {
             this.$notiflix.Loading.remove();
         })
       }
+  },
+  watch: {
+    current_page() {
+      this.handleGetItems()
+    }
   },
 }
 </script>
