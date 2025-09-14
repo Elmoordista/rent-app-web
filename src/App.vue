@@ -186,7 +186,7 @@ export default {
 
   methods: {
     handleGetNotifications() {
-      this.$notiflix.Loading.arrows();
+      // this.$notiflix.Loading.arrows();
       this.submitLoading = true;
       this.axios.get(`/booking/get-pendings`)
         .then(res => {

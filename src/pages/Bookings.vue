@@ -69,7 +69,7 @@
 
           <template v-slot:item.item_total="{ item }">
             <div>
-              <v-btn text small color="primary" @click="selectedOrder = item; showOrderDrawer = true">
+              <v-btn text small color="primary" @click="handleSelectOrder(item); showOrderDrawer = true">
                 View
               </v-btn>
             </div>
@@ -113,11 +113,12 @@
       </v-card-text>
 
       <!-- Drawer for Order Details -->
-      <CategoryModal :show_modal="show_modal" @closeModal="handleCloModal" :item_selected="edit_item" @fetchRecords="handleGetCatoregories"/>
+      <!-- <CategoryModal :show_modal="show_modal" @closeModal="handleCloModal" :item_selected="edit_item" @fetchRecords="handleGetCatoregories"/> -->
     </v-card>
     <template v-if="selectedOrder">
       <v-navigation-drawer
         v-model="showOrderDrawer"
+        :permanent="visible ? true : false"
         right
         absolute
         temporary
@@ -165,7 +166,7 @@
                       <div>
                         <div class="text-caption text-grey">Phone Number</div>
                         <div class="text-subtitle-1 font-weight-medium">
-                          {{ handleDecodeData(selectedOrder.delivery_info) ? handleDecodeData(selectedOrder.delivery_info).phone : 'N/A' }}
+                          {{ handleDecodeData(selectedOrder.notes) ? handleDecodeData(selectedOrder.notes).phone : 'N/A' }}
                         </div>
                       </div>
                     </v-card>
@@ -178,7 +179,45 @@
                       <div>
                         <div class="text-caption text-grey">Address</div>
                         <div class="text-subtitle-1 font-weight-medium">
-                        {{ handleDecodeData(selectedOrder.delivery_info) ? handleDecodeData(selectedOrder.delivery_info).address : 'N/A' }}
+                        {{ handleDecodeData(selectedOrder.notes) ? handleDecodeData(selectedOrder.notes).address : 'N/A' }}
+                        </div>
+                      </div>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="12" v-if="!handleDecodeData(selectedOrder.notes).book_with_driver && selectedOrder.booking_details.length && selectedOrder.booking_details[0].item.need_driver_license">
+                    <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
+                      <v-icon color="orange" class="mr-3">mdi-card-account-details</v-icon>
+                      <div>
+                        <div class="text-caption text-grey">Driver Licence</div>
+                          <div class="text-subtitle-1 font-weight-medium">
+                          <v-img
+                            v-if="handleDecodeData(selectedOrder.notes).driver_license"
+                            :src="handleDecodeData(selectedOrder.notes).driver_license_url"
+                            @click="handleShowImages([handleDecodeData(selectedOrder.notes).driver_license_url])"
+                            max-width="120"
+                            contain
+                            style="cursor: pointer;"
+                          />
+                        </div>
+                      </div>
+                    </v-card>
+                  </v-col>
+
+                  <v-col cols="12" v-if="selectedOrder.booking_details.length && selectedOrder.booking_details[0].item.need_driver_license">
+                    <v-card outlined rounded="lg" class="pa-3 d-flex align-center">
+                      <v-icon color="black" class="mr-3">mdi-car</v-icon>
+                      <div>
+                        <div class="text-caption text-grey">Book With Driver</div>
+                          <div class="text-subtitle-1 font-weight-medium">
+                          <!-- badge -->
+                          <v-chip
+                            :color="handleDecodeData(selectedOrder.notes).book_with_driver ? 'green' : 'red'"
+                            dark
+                            class="mt-1"
+                            label
+                          >
+                            {{ handleDecodeData(selectedOrder.notes).book_with_driver ? 'Yes' : 'No' }}
+                          </v-chip>
                         </div>
                       </div>
                     </v-card>
@@ -230,13 +269,21 @@
                       :key="index"
                     >
                       <v-img
-                        :src="product.item.images[0].image_url"
+                        :src="product.variation_id ? product.variation.image_url : product.item.images[0].image_url"
                         max-width="80"
                         class="mr-3"
                       />
-                      <v-list-item-content>
-                        <v-list-item-title>{{ product.item.name }}</v-list-item-title>
-                        <v-list-item-subtitle>
+                      <v-list-item-content >
+                        <v-list-item-title class="mb-2">{{ product.item.name }}</v-list-item-title>
+                        <template v-if="product.variation_id">
+                          <v-list-item-subtitle class="mb-2">
+                            Size: {{ product.variation.size }}
+                          </v-list-item-subtitle>
+                          <v-list-item-subtitle class="mb-2">
+                            Color: {{ product.variation.color }}
+                          </v-list-item-subtitle>
+                        </template>
+                         <v-list-item-subtitle>
                           Qty: {{ product.quantity }} × ₱ {{ handleChangeMoneyFormat(product.item.price_per_day) }}
                         </v-list-item-subtitle>
                       </v-list-item-content>
@@ -273,17 +320,17 @@
       :visible="visible"
       :imgs="images"
       :index="currentIndex"
-      @hide="visible = false"
+      @hide="onLightboxHide"
     />
   </div>
 </template>
 <script>
-import CategoryModal from '../components/modals/Category.vue'
+// import CategoryModal from '../components/modals/Category.vue'
 import moment from 'moment';
 import VueEasyLightbox from 'vue-easy-lightbox'
 export default {
   components: {
-    CategoryModal,
+    // CategoryModal,
     VueEasyLightbox
   },
   data() {
@@ -321,6 +368,22 @@ export default {
     this.handleGetBookings();
   },
   methods: {
+      onLightboxHide() {
+        this.visible = false;
+        
+        // // Optionally force the drawer to close if needed
+        if (this.selectedOrder) {
+          this.showOrderDrawer = true;
+        }
+        // else{
+        //   this.showOrderDrawer = true;
+        // }
+      },
+      handleSelectOrder(order) {
+        this.selectedOrder = order;
+        this.orderTab = 0; // Reset to first tab when a new order is selected
+      },
+
       handleComputeTotalDays(startDate, endDate) {
         if (!startDate || !endDate) return 0;
         const start = moment(startDate);
