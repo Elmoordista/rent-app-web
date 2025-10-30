@@ -7,7 +7,7 @@
     >
       <v-card>
         <v-card-title class="text-h5 grey lighten-2 d-flex justify-space-between align-center">
-          <h5>Edit User Info</h5>
+          <h5>Add user</h5>
           <v-btn icon @click="handleCloseModal">
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -127,7 +127,7 @@
     },
     data () {
       return {
-        role_option: ['admin', 'user','owner'],
+        role_option: ['admin', 'owner'],
         dialog: false,
         formValid: false,
         submitLoading: false,
