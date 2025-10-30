@@ -403,7 +403,7 @@ export default {
                   date: booking.created_at,
                   income: booking.total_price
                 })) || [];
-                this.categories = res.data.categories.map((cat) => ({
+                this.categories = res.data.categories_lists.map((cat) => ({
                   value: cat.id,
                   text: cat.name
                 })) || [];
