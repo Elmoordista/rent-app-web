@@ -150,6 +150,18 @@
             @change="applyFilter"
           />
         </div>
+        <v-select
+          :items="categories"
+          v-model="category_id"
+          outlined
+          rounded
+          hide-details
+          dense
+          @change="handleSearchRecord()"
+          required
+          style="text-transform: capitalize; width: 230px;"
+          label="Category"
+        ></v-select>
         <div>
           <v-btn color="primary" @click="handleSearch">Search</v-btn>
         </div>
@@ -269,6 +281,8 @@ export default {
       menuFrom: false,
       menuTo: false,
       menuMonth: false,
+      category_id: null,
+      categories : [],
       years: Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i),
       monthOptions: Array.from({ length: 12 }, (_, i) => i + 1),
       dayOptions: Array.from({ length: 31 }, (_, i) => i + 1),
@@ -373,6 +387,7 @@ export default {
                 date_to: this.dateTo,
                 month: this.month,
                 year: this.year,
+                category_id: this.category_id,
             }
         }).then((res)=>{
             if(res.data.success){
@@ -387,6 +402,10 @@ export default {
                   item_name: booking.item_name,
                   date: booking.created_at,
                   income: booking.total_price
+                })) || [];
+                this.categories = res.data.categories.map((cat) => ({
+                  value: cat.id,
+                  text: cat.name
                 })) || [];
             }
         }).catch((error)=>{
