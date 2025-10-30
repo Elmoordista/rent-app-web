@@ -40,6 +40,8 @@
             dense
             clearable
             hide-details=""
+            :append-icon="'mdi-magnify'"
+            @click:append="handleSearchRecord()"
         ></v-text-field>
       </div>
       <v-btn

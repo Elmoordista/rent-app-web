@@ -8,12 +8,156 @@
           Overview of rental categories, income, and performance summary
         </p>
       </v-col>
-      <v-col cols="12" style="text-align: end;">
-        <v-btn color="primary" small @click="downloadAsImage" elevation="2">
+    </v-row>
+
+    <div class="d-flex justify-md-space-between align-items-center mt-1 filter-container">
+      <div class="d-flex flex-wrap" style="gap: 20px;">
+        <div class="d-flex align-center" style="gap: 10px; min-width: 200px;">
+          <label >Filter by:</label>
+          <v-select
+            v-model="filterType"
+            :items="['Day', 'Date Range', 'Monthly', 'Yearly']"
+            dense
+            outlined
+            hide-details
+            style="max-width: 150px;"
+          />
+        </div>
+        <div class="d-flex flex-wrap align-center" style="gap: 15px;">
+          
+          <!-- Day -->
+          <v-menu
+            v-if="filterType === 'Day'"
+            v-model="menuDay"
+            :close-on-content-click="false"
+            transition="scale-transition"
+            offset-y
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
+                v-model="day"
+                label="Select Day"
+                prepend-icon="mdi-calendar"
+                readonly
+                dense
+                outlined
+                v-bind="attrs"
+                v-on="on"
+                hide-details
+                style="max-width: 300px;"
+              />
+            </template>
+            <v-date-picker
+              v-model="day"
+              @input="menuDay = false; applyFilter()"
+            />
+          </v-menu>
+
+          <!-- Date Range -->
+        
+          <v-menu
+            v-if="filterType === 'Date Range'"
+            v-model="menuFrom"
+            :close-on-content-click="false"
+            transition="scale-transition"
+            offset-y
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
+                v-model="dateFrom"
+                label="From"
+                prepend-icon="mdi-calendar"
+                readonly
+                dense
+                outlined
+                v-bind="attrs"
+                v-on="on"
+                hide-details
+                style="max-width: 300px;"
+              />
+            </template>
+            <v-date-picker
+              v-model="dateFrom"
+              @input="menuFrom = false; applyFilter()"
+            />
+          </v-menu>
+          <v-menu
+            v-if="filterType === 'Date Range'"
+            v-model="menuTo"
+            :close-on-content-click="false"
+            transition="scale-transition"
+            offset-y
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
+                v-model="dateTo"
+                label="To"
+                prepend-icon="mdi-calendar"
+                readonly
+                dense
+                outlined
+                v-bind="attrs"
+                v-on="on"
+                hide-details
+                style="max-width: 200px;"
+              />
+            </template>
+            <v-date-picker
+              v-model="dateTo"
+              @input="menuTo = false; applyFilter()"
+            />
+          </v-menu>
+
+          <!-- Monthly -->
+          <v-menu
+            v-if="filterType === 'Monthly'"
+            v-model="menuMonth"
+            :close-on-content-click="false"
+            transition="scale-transition"
+            offset-y
+          >
+            <template v-slot:activator="{ on, attrs }">
+              <v-text-field
+                v-model="month"
+                label="Select Month"
+                prepend-icon="mdi-calendar-month"
+                readonly
+                dense
+                outlined
+                v-bind="attrs"
+                v-on="on"
+                hide-details
+                style="max-width: 200px;"
+              />
+            </template>
+            <v-date-picker
+              v-model="month"
+              type="month"
+              @input="menuMonth = false; applyFilter()"
+            />
+          </v-menu>
+
+          <!-- Yearly -->
+          <v-select
+            v-if="filterType === 'Yearly'"
+            v-model="year"
+            :items="years"
+            label="Select Year"
+            dense
+            outlined
+            hide-details
+            style="max-width: 200px;"
+            @change="applyFilter"
+          />
+        </div>
+        <div>
+          <v-btn color="primary" @click="handleSearch">Search</v-btn>
+        </div>
+      </div>
+       <v-btn color="primary"  @click="downloadAsImage" elevation="2">
           <v-icon left>mdi-download</v-icon> Print
         </v-btn>
-      </v-col>
-    </v-row>
+    </div>
 
     <div  ref="dashboardContent" class="mt-2">
       <!-- KPI Cards -->
@@ -114,7 +258,20 @@ export default {
       // ],
       incomeChart: null,
       categoryChart: null,
-      recentRentals: []
+      recentRentals: [],
+      filterType: "Day",
+      day: null,
+      dateFrom: null,
+      dateTo: null,
+      month: null,
+      year: null,
+      menuDay: false,
+      menuFrom: false,
+      menuTo: false,
+      menuMonth: false,
+      years: Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i),
+      monthOptions: Array.from({ length: 12 }, (_, i) => i + 1),
+      dayOptions: Array.from({ length: 31 }, (_, i) => i + 1),
     };
   },
   methods: {
@@ -203,8 +360,21 @@ export default {
       if (!number && number !== 0) return 0;
       return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     },
+    handleSearch () {
+      this.$notiflix.Loading.arrows();
+      this.handleGetCategoriesReport();
+    },
     handleGetCategoriesReport () {
-        this.axios.get(`/booking/get-categories-reports`).then((res)=>{
+        this.axios.get(`/booking/get-categories-reports`,{
+            params: {
+                filter_type: this.filterType,
+                day: this.day,
+                date_from: this.dateFrom,
+                date_to: this.dateTo,
+                month: this.month,
+                year: this.year,
+            }
+        }).then((res)=>{
             if(res.data.success){
                 const categories = res.data.categories || [];
                 const incomes = res.data.sales || [];
@@ -222,6 +392,7 @@ export default {
         }).catch((error)=>{
             console.log(error,'error')
         }).finally(()=>{
+            this.$notiflix.Loading.remove();
         })
     },
   },
@@ -249,5 +420,14 @@ export default {
 .rental-dashboard {
   background: #f5f6f8;
   min-height: 100vh;
+}
+.filter-container{
+  flex-wrap: wrap;
+  gap: 15px;
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  border: #f5f6f8 1px solid;
+  margin-bottom: 20px;
 }
 </style>
