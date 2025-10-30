@@ -12,7 +12,9 @@
               v-model="search"
               @keyup.enter="handleSearchRecord"
               @click:clear="handleSearchRecord"
+              :append-icon="'mdi-magnify'"
               clearable
+              @click:append="handleSearchRecord"
               hide-details=""
           ></v-text-field>
       </div>
