@@ -391,11 +391,11 @@ export default {
             }
         }).then((res)=>{
             if(res.data.success){
-                const categories = res.data.categories || [];
+                const categories_chart = res.data.categories || [];
                 const incomes = res.data.sales || [];
                 const colors = res.data.colors || [];
-                this.renderIncomeChart(categories, incomes, colors);
-                this.renderCategoryChart(categories, incomes, colors);
+                this.renderIncomeChart(categories_chart, incomes, colors);
+                this.renderCategoryChart(categories_chart, incomes, colors);
                 this.recentRentals = res.data.recent_bookings.map(booking => ({
                   category: booking.category,
                   renter: booking.rented_by,
