@@ -157,6 +157,7 @@
           rounded
           hide-details
           dense
+          clearable
           @change="handleSearchRecord()"
           required
           style="text-transform: capitalize; width: 230px;"
