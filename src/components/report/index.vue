@@ -8,61 +8,69 @@
           Overview of rental categories, income, and performance summary
         </p>
       </v-col>
-    </v-row>
-
-    <!-- KPI Cards -->
-    <v-row dense class="mb-6">
-      <v-col cols="12" sm="6" md="3" v-for="kpi in kpis" :key="kpi.label">
-        <v-card class="pa-4 text-center" outlined>
-          <v-icon large class="mb-2" color="primary">{{ kpi.icon }}</v-icon>
-          <div class="caption grey--text">{{ kpi.label }}</div>
-          <div class="headline font-weight-bold mt-1">
-            {{ kpi.value }}
-          </div>
-        </v-card>
+      <v-col cols="12" style="text-align: end;">
+        <v-btn color="primary" small @click="downloadAsImage" elevation="2">
+          <v-icon left>mdi-download</v-icon> Print
+        </v-btn>
       </v-col>
     </v-row>
 
-    <!-- Charts + Table -->
-    <v-row dense>
-      <!-- Income Chart -->
-      <v-col cols="12" md="6">
-        <v-card class="pa-4" outlined>
-          <h3 class="subtitle-1 font-weight-bold mb-3">Income by Category</h3>
-          <canvas id="incomeChart" height="180"></canvas>
-        </v-card>
-      </v-col>
+    <div  ref="dashboardContent" class="mt-2">
+      <!-- KPI Cards -->
+      <v-row dense class="mb-6">
+        <v-col cols="12" sm="6" md="3" v-for="kpi in kpis" :key="kpi.label">
+          <v-card class="pa-4 text-center" outlined>
+            <v-icon large class="mb-2" color="primary">{{ kpi.icon }}</v-icon>
+            <div class="caption grey--text">{{ kpi.label }}</div>
+            <div class="headline font-weight-bold mt-1">
+              {{ kpi.value }}
+            </div>
+          </v-card>
+        </v-col>
+      </v-row>
 
-      <!-- Category Pie Chart -->
-      <v-col cols="12" md="6">
-        <v-card class="pa-4" outlined>
-          <h3 class="subtitle-1 font-weight-bold mb-3">Category Distribution</h3>
-          <canvas id="categoryChart" height="180"></canvas>
-        </v-card>
-      </v-col>
+      <!-- Charts + Table -->
+      <v-row dense>
+        <!-- Income Chart -->
+        <v-col cols="12" md="6">
+          <v-card class="pa-4" outlined>
+            <h3 class="subtitle-1 font-weight-bold mb-3">Income by Category</h3>
+            <canvas id="incomeChart" height="180"></canvas>
+          </v-card>
+        </v-col>
 
-      <!-- Recent Rentals Table -->
-      <v-col cols="12" class="mt-6">
-        <v-card class="pa-4" outlined>
-          <h3 class="subtitle-1 font-weight-bold mb-3">Recent Rentals</h3>
-          <v-data-table
-            :headers="headers"
-            :items="recentRentals"
-            hide-default-footer
-            class="elevation-1"
-          >
-            <template v-slot:item.income="{ item }">
-              ₱ {{ handleAddCommas(item.income) }}
-            </template>
-          </v-data-table>
-        </v-card>
-      </v-col>
-    </v-row>
+        <!-- Category Pie Chart -->
+        <v-col cols="12" md="6">
+          <v-card class="pa-4" outlined>
+            <h3 class="subtitle-1 font-weight-bold mb-3">Category Distribution</h3>
+            <canvas id="categoryChart" height="180"></canvas>
+          </v-card>
+        </v-col>
+
+        <!-- Recent Rentals Table -->
+        <v-col cols="12" class="mt-6">
+          <v-card class="pa-4" outlined>
+            <h3 class="subtitle-1 font-weight-bold mb-3">Recent Rentals</h3>
+            <v-data-table
+              :headers="headers"
+              :items="recentRentals"
+              hide-default-footer
+              class="elevation-1"
+            >
+              <template v-slot:item.income="{ item }">
+                ₱ {{ handleAddCommas(item.income) }}
+              </template>
+            </v-data-table>
+          </v-card>
+        </v-col>
+      </v-row>
+    </div>
   </v-container>
 </template>
 
 <script>
 import Chart from "chart.js";
+import html2canvas from "html2canvas";
 
 export default {
   name: "RentalDashboard",
@@ -95,6 +103,7 @@ export default {
       headers: [
         { text: "Category", value: "category" },
         { text: "Renter", value: "renter" },
+        { text: "Item", value: "item_name" },
         { text: "Date", value: "date" },
         { text: "Income", value: "income" },
       ],
@@ -111,6 +120,40 @@ export default {
   methods: {
     formatCurrency(val) {
       return "$" + val.toLocaleString();
+    },
+    async downloadAsImage() {
+      const element = this.$refs.dashboardContent;
+
+      this.$nextTick(async () => {
+        const originalCanvas = await html2canvas(element, {
+          scale: 2, // higher quality
+          useCORS: true,
+          backgroundColor: '#ffffff', // white background
+        });
+
+        const padding = 40; // pixels of padding
+        const paddedCanvas = document.createElement('canvas');
+        const ctx = paddedCanvas.getContext('2d');
+
+        // Set new canvas size with padding
+        paddedCanvas.width = originalCanvas.width + padding * 2;
+        paddedCanvas.height = originalCanvas.height + padding * 2;
+
+        // Fill background white
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, paddedCanvas.width, paddedCanvas.height);
+
+        // Draw the original canvas with padding offset
+        ctx.drawImage(originalCanvas, padding, padding);
+
+        // Convert to image and download
+        const link = document.createElement('a');
+        link.download = `rental_dashboard_${new Date()
+          .toISOString()
+          .slice(0, 10)}.png`;
+        link.href = paddedCanvas.toDataURL('image/png');
+        link.click();
+      });
     },
     renderIncomeChart($categories, $incomes, $colors) {
       const ctx = document.getElementById("incomeChart");
