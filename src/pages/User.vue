@@ -36,10 +36,18 @@
       <v-data-table
         :headers="headers"
         :items="users"
+        :server-items-length="users.total"
+        :items-per-page="items.per_page"
+        :loading="submitLoading"
+        :page.sync="current_page"
         item-key="email"
-        cicl
+        class="elevation-1"
       >
 
+       <template v-slot:item.full_name="{ item }">
+          <span style="text-transform: capitalize;">{{ item.full_name ? item.full_name : '---' }}</span>
+      </template>
+    
        <template v-slot:item.role="{ item }">
           <span style="text-transform: capitalize;">{{ item.role }}</span>
       </template>
@@ -74,6 +82,8 @@ export default {
   data: () => ({
     show_modal: false,
     edit_user:null,
+    submitLoading: false,
+    current_page: 1,
     search:null,
     users: [],
     headers: [
@@ -129,7 +139,11 @@ export default {
       handleGetUsers () {
         this.$notiflix.Loading.arrows();
         this.submitLoading = true;
-        this.axios.get(`/user?search=${this.search ? this.search: ''}`).then((res)=>{
+        this.axios.get(`/user?search=${this.search ? this.search: ''}`,{
+          params: {
+            page: this.current_page
+          }
+        }).then((res)=>{
             if(res.status){
               this.users = res.data.data.data;
             }
