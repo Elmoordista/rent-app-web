@@ -36,7 +36,7 @@
       <v-data-table
         :headers="headers"
         :items="users"
-        :server-items-length="users.total"
+        :server-items-length="total"
         :items-per-page="items.per_page"
         :loading="submitLoading"
         :page.sync="current_page"
@@ -84,6 +84,7 @@ export default {
     edit_user:null,
     submitLoading: false,
     current_page: 1,
+    total: 0,
     search:null,
     users: [],
     headers: [
@@ -146,6 +147,7 @@ export default {
         }).then((res)=>{
             if(res.status){
               this.users = res.data.data.data;
+              this.total = res.data.data.total;
             }
         }).catch((error)=>{
             console.log(error,'error')
