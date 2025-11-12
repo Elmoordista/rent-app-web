@@ -35,9 +35,9 @@
     <v-card-text class="pt-3">
       <v-data-table
         :headers="headers"
-        :items="users"
-        :server-items-length="total"
-        :items-per-page="items.per_page"
+        :items="users.data"
+        :server-items-length="users.total"
+        :items-per-page="users.per_page"
         :loading="submitLoading"
         :page.sync="current_page"
         item-key="email"
@@ -146,8 +146,7 @@ export default {
           }
         }).then((res)=>{
             if(res.status){
-              this.users = res.data.data.data;
-              this.total = res.data.data.total;
+              this.users = res.data.data;
             }
         }).catch((error)=>{
             console.log(error,'error')
