@@ -156,5 +156,10 @@ export default {
         })
       }
   },
+  watch: {
+    current_page() {
+      this.handleGetUsers()
+    }
+  },
 }
 </script>
