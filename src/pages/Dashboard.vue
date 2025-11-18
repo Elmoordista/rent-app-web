@@ -6,6 +6,7 @@
           :active_renters="total_users" 
           :available_items="available_items" 
           :total_rentals="total_rentals" 
+          @handleSearchReport="handleSearchReport"
         />
     </div>  
     <div class="mb-4 mx-4 rental-dashboard pa-6" style="background: #f5f6f8;">
@@ -229,17 +230,25 @@
       if (!number && number !== 0) return 0;
       return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     },
-    handleSearch () {
-        this.$notiflix.Loading.arrows();
-        this.submitLoading = true;
-        this.axios.post(`/booking/get-filtered-bookings`, {
-            filterType: this.filterType,
+    handleSearchReport(params){
+      this.handleSearch(params);
+    },
+    handleSearch (params = null) {
+        var filterParams = {
+            filterType: '',
             day: this.day,
             dateFrom: this.dateFrom,
             dateTo: this.dateTo,
             month: this.month,
-            year: this.year
-        }).then((res)=>{
+            year: this.year,
+            category_id: this.category_id,
+        };
+        if(params){
+          filterParams = params;
+        }
+        this.$notiflix.Loading.arrows();
+        this.submitLoading = true;
+        this.axios.post(`/booking/get-filtered-bookings`, filterParams).then((res)=>{
             if(res.data.success){
                 this.categories = res.data.categories;
                 this.total = res.data.total;

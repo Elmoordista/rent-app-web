@@ -407,6 +407,15 @@ export default {
     handleSearch () {
       this.$notiflix.Loading.arrows();
       this.handleGetCategoriesReport();
+      this.$emit('handleSearchReport', {
+        filterType: this.filterType,
+        day: this.day,
+        dateFrom: this.dateFrom,
+        dateTo: this.dateTo,
+        month: this.month,
+        year: this.year,
+        category_id: this.category_id,
+      });
     },
     handleGetCategoriesReport () {
         this.axios.get(`/booking/get-categories-reports`,{
