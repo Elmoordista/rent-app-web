@@ -227,7 +227,6 @@
 
 <script>
 import Chart from "chart.js";
-import html2canvas from "html2canvas";
 
 export default {
   name: "RentalDashboard",
@@ -294,39 +293,69 @@ export default {
       return "$" + val.toLocaleString();
     },
     async downloadAsImage() {
-      const element = this.$refs.dashboardContent;
+      if(this.recentRentals.length === 0){
+        this.$notiflix.Notify.failure('No data available to generate PDF.');
+        return;
+      }
+      this.$notiflix.Loading.arrows('Generating PDF...');
+      this.submitLoading = true;
+      this.axios.post(`/pdf/export`,this.recentRentals, { 
+        responseType: 'blob', 
+      })
+        .then(res => {
+          if (res.status) {
+            const blob = new Blob([res.data], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
 
-      this.$nextTick(async () => {
-        const originalCanvas = await html2canvas(element, {
-          scale: 2, // higher quality
-          useCORS: true,
-          backgroundColor: '#ffffff', // white background
+            // ✅ Open the PDF in a new tab
+            window.open(url, "_blank");
+
+            // Clean up URL object after use
+            setTimeout(() => {
+              window.URL.revokeObjectURL(url);
+            }, 1000);
+          }
+        })
+        .catch(err => console.log(err))
+        .finally(() => {
+          this.submitLoading = false;
+          this.$notiflix.Loading.remove();
         });
-
-        const padding = 40; // pixels of padding
-        const paddedCanvas = document.createElement('canvas');
-        const ctx = paddedCanvas.getContext('2d');
-
-        // Set new canvas size with padding
-        paddedCanvas.width = originalCanvas.width + padding * 2;
-        paddedCanvas.height = originalCanvas.height + padding * 2;
-
-        // Fill background white
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, paddedCanvas.width, paddedCanvas.height);
-
-        // Draw the original canvas with padding offset
-        ctx.drawImage(originalCanvas, padding, padding);
-
-        // Convert to image and download
-        const link = document.createElement('a');
-        link.download = `rental_dashboard_${new Date()
-          .toISOString()
-          .slice(0, 10)}.png`;
-        link.href = paddedCanvas.toDataURL('image/png');
-        link.click();
-      });
     },
+    // async downloadAsImage() {
+    //   const element = this.$refs.dashboardContent;
+
+    //   this.$nextTick(async () => {
+    //     const originalCanvas = await html2canvas(element, {
+    //       scale: 2, // higher quality
+    //       useCORS: true,
+    //       backgroundColor: '#ffffff', // white background
+    //     });
+
+    //     const padding = 40; // pixels of padding
+    //     const paddedCanvas = document.createElement('canvas');
+    //     const ctx = paddedCanvas.getContext('2d');
+
+    //     // Set new canvas size with padding
+    //     paddedCanvas.width = originalCanvas.width + padding * 2;
+    //     paddedCanvas.height = originalCanvas.height + padding * 2;
+
+    //     // Fill background white
+    //     ctx.fillStyle = '#ffffff';
+    //     ctx.fillRect(0, 0, paddedCanvas.width, paddedCanvas.height);
+
+    //     // Draw the original canvas with padding offset
+    //     ctx.drawImage(originalCanvas, padding, padding);
+
+    //     // Convert to image and download
+    //     const link = document.createElement('a');
+    //     link.download = `rental_dashboard_${new Date()
+    //       .toISOString()
+    //       .slice(0, 10)}.png`;
+    //     link.href = paddedCanvas.toDataURL('image/png');
+    //     link.click();
+    //   });
+    // },
     renderIncomeChart($categories, $incomes, $colors) {
       const ctx = document.getElementById("incomeChart");
       if (this.incomeChart) this.incomeChart.destroy();

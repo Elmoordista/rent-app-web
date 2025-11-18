@@ -63,7 +63,7 @@
 
           <template v-slot:item.payment_type="{ item }">
             <div  class="payment-mode" :class="item.payment_type === 'gcash' ? 'gcash' : 'cod'">
-              {{ item.payment_type }}
+              <span style="text-transform: uppercase;">{{ item.payment_type }}</span>
             </div>
           </template>
 
